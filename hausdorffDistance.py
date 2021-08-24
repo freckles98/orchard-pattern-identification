@@ -19,22 +19,22 @@ class distances:
     def toStrings(self):
         print(self.point_a, self.point_b, self.distance)
 
+
 def closest_node(node, nodes):
     nodes = np.asarray(nodes)
     closest_index = distance.cdist([node], nodes).argmin()
     return nodes[closest_index]
 
+
 def minimise_euclidean_normal(point_set_a, point_set_b):
-    print("start of euclid")
-    distances_set = [0] * len(point_set_a)
+    distances_set = []
     counter = 0
     for point in point_set_a:
-
-         nearest_geoms = nearest_geoms(point, point_set_b)
-         print(nearest_geoms)
-         distance = math.sqrt(((point.x - nearest_geoms[1].x) ** 2) + ((point.y - nearest_geoms[1].y) ** 2))
-         distances_set[counter] = distances(point, nearest_geoms[1], distance)
-         counter += 1
+        nearest_geoms = nearest_points(point, point_set_b)
+        dist = distance.cdist(point, nearest_geoms)#math.sqrt(((point.x - nearest_geoms[1].x) ** 2) + ((point.y - nearest_geoms[1].y) ** 2))
+        print(dist)
+        distances_set.append(distances(point, nearest_geoms[1], dist))
+        counter += 1
     # for a in point_set_a:
     #     minimum = np.inf
     #     for b in point_set_b:
@@ -51,28 +51,20 @@ def minimise_euclidean_normal(point_set_a, point_set_b):
     #             #print(distances_set[counter].point_a, distances_set[counter].point_b, distances_set[counter].distance)
     #             counter += 1
 
-    # for i in range(len(distances_set)):
-    # print(distances_set[i].toStrings())
-    print("end of euclid")
-
     return distances_set
 
 
 def find_kth(distance_arr, area):
-    print("start of kth")
     maximum = 0
     count = 0
-    for x in range(len(distance_arr)):
-        if hasattr('abc','distance') == False:
-            break
-        distance = distance_arr[x].distance
+    for x in distance_arr:
+        distance = x.distance
         # are the points within an area of matching points
-        if (area.contains(distance_arr[x].point_a) or area.touches(distance_arr[x].point_a)) and (
-                area.contains(distance_arr[x].point_b) or area.touches(distance_arr[x].point_b)):
+        if (area.contains(x.point_a) or area.touches(x.point_a)) and (
+                area.contains(x.point_b) or area.touches(x.point_b)):
             count += 1
             if distance > maximum:
                 maximum = distance
-    print("end of kth")
     if count == 0:
         return -1
     return maximum
@@ -81,25 +73,22 @@ def find_kth(distance_arr, area):
 def hausdorff(point_set_a, point_set_b):
     distances_a = minimise_euclidean_normal(point_set_a, point_set_b)
 
-
     point_set = []
     # append all distances that are within 0.2 and append them
-    for x in range(len(point_set_a)):
-        if hasattr('abc','distance') == False:
-            break
-        if distances_a[x].distance < 0.2:
-            point_set.append(distances_a[x].point_a)
+    for x in distances_a:
+        if x.distance < 0.2:
+            point_set.append(x.point_a)
     matching_points = MultiPoint(point_set)
+    print("Matching points")
     # use minimum rotated rectangle to outline the area of matching points
     area = matching_points.minimum_rotated_rectangle
-
+    print(area)
     distances_b = minimise_euclidean_normal(point_set_b, point_set_a)
-    multi = MultiPoint(point_set)
 
     # find the largest separate distance
     max_a = find_kth(distances_a, area)
     max_b = find_kth(distances_b, area)
-    print("end of Hausdorff")
+
     if max_a > max_b:
         return max_a
     return max_b

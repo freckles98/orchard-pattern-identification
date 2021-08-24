@@ -92,30 +92,17 @@ def mixedShape():
     data1 = diamond_set(0, 0, 10, 15, False)
     data2 = square_set(10, 0, 10, 15, True)
     data3 = diamond_set(20, 0, 10, 15, False)
-    display_data(data2,0)
     point_set = []
     for x in data1:
         point_set.append(x)
 
     for y in data2:
         point_set.append(y)
-        print("hello",y)
 
     for z in data3:
-
         point_set.append(z)
 
-    data = to_multipoint(point_set)
-    display_data(data, 0)
-    #data2 = pm.translations(data2, 10, 0)
-
-    #data3 = pm.translations(data3, 20, 0)
-    # a = np.concatenate((data1, data2, data3))
-    # concat = np.append(data1, data2)
-    print(data1)
-    print("come again")
-    #data = np.concatenate((a, data3))
-
+    return to_multipoint(point_set)
 
 
 
@@ -159,7 +146,7 @@ def main():
     # x, y = convex.exterior.coords.xy
     # print(x, y)
 
-    diamond = diamond_set(0,0,5, 10, True)
+    diamond = diamond_set(0, 0, 5, 10, True)
     #display_data(diamond, 0)
     ms = mixedShape()
     #display_data(ms, 0)
