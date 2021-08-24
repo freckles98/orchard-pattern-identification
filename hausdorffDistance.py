@@ -31,8 +31,11 @@ def minimise_euclidean_normal(point_set_a, point_set_b):
     counter = 0
     for point in point_set_a:
         nearest_geoms = nearest_points(point, point_set_b)
-        dist = distance.cdist(point, nearest_geoms)#math.sqrt(((point.x - nearest_geoms[1].x) ** 2) + ((point.y - nearest_geoms[1].y) ** 2))
-        print(dist)
+        dist = math.sqrt(((point.x - nearest_geoms[1].x) ** 2) + ((point.y - nearest_geoms[1].y) ** 2))
+
+        if point.x == nearest_geoms[1].x :
+            print("Point A: ", point, " Point B: ", nearest_geoms[1])
+            print(dist)
         distances_set.append(distances(point, nearest_geoms[1], dist))
         counter += 1
     # for a in point_set_a:
@@ -76,7 +79,7 @@ def hausdorff(point_set_a, point_set_b):
     point_set = []
     # append all distances that are within 0.2 and append them
     for x in distances_a:
-        if x.distance < 0.2:
+        if x.distance < 0.22:
             point_set.append(x.point_a)
     matching_points = MultiPoint(point_set)
     print("Matching points")
@@ -98,7 +101,7 @@ def main():
     square = gs.square_set(2, 6)
     square2 = gs.diamond_set(0, 2)
     gs.display_data(square, square2)
-    square2 = pm.translations(square2, 0.2, 0)
+    square2 = pm.translations(square2, 0.5, 0)
     print("Hausdorff distance: ", hausdorff(square, square2))
 
 
