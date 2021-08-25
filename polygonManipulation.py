@@ -89,11 +89,9 @@ def normalize_data():
     return
 
 
-def best_pattern_match(data):
+def best_pattern_match(data, model1, model2, model3):
 
-    model1 = gs.square_set(0, 0, 5, 5, True)
-    model2 = gs.diamond_set(0, 0, 5, 5, True)
-    model3 = gs.double_row(0, 5, True)
+
     min1 = matching_the_pattern(model1, data)
     min2 = matching_the_pattern(model2, data)
     min3 = matching_the_pattern(model3, data)
@@ -152,24 +150,31 @@ def best_pattern_match(data):
     # else:
     #     print("error")
 
-def exectute_over_entire_pattern(data):
+def exectute_over_entire_pattern(data, model):
+    model1 = gs.square_set(0, 0, 5, 5, True)
+    model2 = gs.diamond_set(0, 0, 5, 5, True)
+    model3 = gs.double_row(0, 5, True)
     area = data.minimum_rotated_rectangle
     x, y = area.exterior.coords.xy
+    list_of_matches = []
     print(x, y)
+    count = 0
+    final_matching_pattern = []
+    switch = False
+    flag = False
     for y in range(int(max(y))):
         for x in range(max(x)):
-            #change this not hausdorff best pattern match
-            dist = hd.hausdorff(model, data)
-            if 0 <= dist < minimum:
-                minimum = dist
-            if dist != 0:
-                if 0 < dist < matching_model.distance:
-                    matching_model = MatchingModel(dist, model)
 
-                if switch == False:
-                    model = translations(model, 0.2, 0)
-                else:
-                    model = translations(model, -0.2, 0)
+            #change this not hausdorff best pattern match
+            best_match = matching_the_pattern(data, model)
+            list_of_matches[x][y] = best_match
+            #final_matching_pattern.append(best_match.distance)
+
+
+            if switch == False:
+                model = translations(model, 1, 0)
+            else:
+                model = translations(model, 1, 0)
 
 
         if switch:
@@ -178,7 +183,8 @@ def exectute_over_entire_pattern(data):
             switch = True
         if flag == True:
             break
-        model = translations(model, 0, 0.2)
+        model = translations(model, 0, 1)
+    return
 
 def main():
     data = gs.mixedShape()
