@@ -1,3 +1,4 @@
+import shapely.coords
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import plot
 from shapely.affinity import affine_transform, translate, rotate
@@ -40,14 +41,16 @@ def importData():
 
 def square_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
     point_set = []
-    for y in range(range_start_y, range_end_y+range_start_y):
-        for x in range(range_start_x, range_end_x+range_start_x):
+    end_y = range_end_y+range_start_y
+    end_x = range_end_x+range_start_x
+    for y in range(range_start_y, end_y):
+        for x in range(range_start_x, end_x):
             point_set.append(Point(x, y))
+
     if multi_point_bool:
         return MultiPoint(point_set)
     return point_set
 # generate set of square
-
 
 def diamond_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
     point_set = []
@@ -56,7 +59,6 @@ def diamond_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_po
     for y in range(range_start_y, range_end_y+range_start_y):
 
         if (skip == False):
-            print()
             for x in range(range_start_x, range_end_x+range_start_x, 2):
                 point_set.append(Point(x, y))
                 skip = True
@@ -65,6 +67,8 @@ def diamond_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_po
             for x in range(range_start_x+1, range_end_x+range_start_x, 2):
                 point_set.append(Point(x, y))
                 skip = False
+
+
     if multi_point_bool:
         return MultiPoint(point_set)
     return point_set
@@ -90,7 +94,7 @@ def to_multipoint(arr):
 
 def mixedShape():
     data1 = diamond_set(0, 0, 10, 15, False)
-    data2 = square_set(10, 0, 10, 15, True)
+    data2 = square_set(10, 0, 10, 15, False)
     data3 = diamond_set(20, 0, 10, 15, False)
     point_set = []
     for x in data1:
@@ -112,8 +116,10 @@ def display_data(multi, multi2):
     if multi2 != 0:
         xs2 = [point.x for point in multi2]
         ys2 = [point.y for point in multi2]
-        plt.scatter(xs2, ys2, s=20)
-    plt.scatter(xs, ys, s=10)
+        plt.scatter(xs2, ys2, s=2)
+        plt.scatter(xs, ys, s=1)
+    else:
+        plt.scatter(xs, ys, s=1)
     plt.show()
     # fig = pyplot.figure(1, dpi=90)
     # fig.set_frameon(True)
