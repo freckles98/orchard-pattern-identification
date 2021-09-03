@@ -90,9 +90,9 @@ def normalize_data():
 
 
 def best_pattern_match(data):
-    model1 = gs.square_set(0, 0, 5, 5, True)
-    model2 = gs.diamond_set(0, 0, 5, 5, True)
-    model3 = gs.double_row(0, 5, True)
+    model1 = gs.square_set(0, 0, 10, 10, True)
+    model2 = gs.diamond_set(0, 0, 10, 10, True)
+    model3 = gs.double_row(0, 10, True)
 
     min1 = execute_over_entire_pattern(model1, data)
     min2 = execute_over_entire_pattern(model2, data)
@@ -118,7 +118,7 @@ def best_pattern_match(data):
                 print("Matching pattern: double row")
         elif min2[x].distance != -1:
             if min3[x].distance != -1:
-                if min1[x].distance < min2[x].distance and min1[x].distance < min3.distance:
+                if min1[x].distance < min2[x].distance and min1[x].distance < min3[x].distance:
                     # gs.display_data(min1[x].model, data)
                     print("Matching pattern: square")
                     return min1[x].model, "Square"
@@ -161,8 +161,8 @@ def execute_over_entire_pattern(model, data):
     list_of_matches = []
     switch = False
     #print("Xcord", xcord, "Ycord", ycord)
-    for y in range(int(max(ycord))):
-        for x in range(int(max(xcord))):
+    for y in range(int(max(ycord)/10)):
+        for x in range(int(max(xcord)/10)):
 
             # change this not hausdorff best pattern match
 
@@ -171,24 +171,25 @@ def execute_over_entire_pattern(model, data):
             count += 1
 
             if not switch:
-                model = translations(model, 1, 0)
+                model = translations(model, 10, 0)
             else:
-                model = translations(model, -1, 0)
+                model = translations(model, -10, 0)
 
         if switch:
             switch = False
         else:
             switch = True
-        model = translations(model, 0, 1)
+        model = translations(model, 0, 10)
         print("Okay going up", y)
     return list_of_matches
 
 
 def main():
+    print("let the games begin")
     data = gs.mixedShape()
     #data = translations(data, 0.5, 0)
-    # data = affinity.scale(data, xfact=1.2, yfact=1.2)
-    #gs.display_data(data, 0)
+    #data = affinity.scale(data, xfact=1.2, yfact=1.2)
+    gs.display_data(data, 0)
     print(best_pattern_match(data))
 
 
