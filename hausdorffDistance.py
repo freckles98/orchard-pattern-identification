@@ -31,8 +31,6 @@ def closest_node(node, nodes):
 
 
 def ckdnearest(point, btree):
-
-
     dist, idx = btree.query(point, k=1)
     return (idx, dist)
 
@@ -69,12 +67,8 @@ def find_kth(distance_arr, area):
 
 
 def hausdorff(point_set_a, point_set_b):
+    print("start")
     distances_a = minimise_euclidean_normal(point_set_a, point_set_b, True)
-    point_set = []
-    # append all distances that are within 0.2 and append them
-    #for x in distances_a:
-     #   if x.distance < 0.22:
-      #      point_set.append(x.point_a)
     matching_points = MultiPoint(distances_a[1])
     # use minimum rotated rectangle to outline the area of matching points
     area = matching_points.minimum_rotated_rectangle
@@ -83,6 +77,7 @@ def hausdorff(point_set_a, point_set_b):
     # find the largest separate
     max_a = find_kth(distances_a[0], area)
     max_b = find_kth(distances_b[0], area)
+    print("end")
     if max_a > max_b:
         return max_a
     return max_b

@@ -1,6 +1,12 @@
+import math
+
+import shapely.affinity
 from shapely import affinity
 from shapely.affinity import affine_transform, translate, rotate
 import sys
+
+from shapely.geometry import Point
+
 import generateShape as gs
 import hausdorffDistance as hd
 import numpy as np
@@ -15,7 +21,7 @@ class PatternNode:
 
 
 def rotations(point_set):
-    return rotate(point_set, 1, origin='center')
+    return rotate(point_set, 15, origin='center')
 
 
 def translations(point_set, x, y):
@@ -79,21 +85,50 @@ def matching_the_pattern(model, data):
         if flag == True:
             break
         model = translations(model, 0, 0.2)
+        gs.display_data(model, data)
 
     #if minimum == np.inf:
         #print("no match")
     return matching_model
 
 
-def normalize_data():
-    return
+def normalize_data(data):
+    num_trees = data[1]
+    centroids = data[0]
+    convex = centroids.convex_hull
+    area = convex.area
+    density = num_trees / area
+    print(math.sqrt(density))
+    centroids = shapely.affinity.scale(centroids, math.sqrt(density), math.sqrt(density))
+    rectangle = centroids.minimum_rotated_rectangle
+    x, y = rectangle.exterior.coords.xy
+    translation_index = y.index(min(y))
+    translation_x = x[translation_index] #x
+    translation_y = y[translation_index] #y
+
+    rotation_index = x.index(max(x))
+    rotation_x = x[rotation_index] #a
+    rotation_y = y[rotation_index] #b
+    distance_x = math.sqrt((translation_x - rotation_x)**2+(translation_y - translation_y)**2)
+    distance_y = math.sqrt((rotation_x - rotation_x)**2+(rotation_y - translation_y)**2)
+    angle = math.atan(distance_y/distance_x)
+    centroids = rotate(centroids, -angle, origin=Point(translation_x, translation_y),use_radians=True)
+    gs.display_data(centroids, 0)
+    centroids = translations(centroids, -translation_x,-translation_y)
+
+
+
+
+    gs.display_data(centroids, 0)
+    return centroids
 
 
 def best_pattern_match(data):
-    model1 = gs.square_set(0, 0, 10, 10, True)
-    model2 = gs.diamond_set(0, 0, 10, 10, True)
-    model3 = gs.double_row(0, 10, True)
-
+    model1 = gs.square_set(0, 0, 30, 30, True)
+    model1 = rotations(model1)
+    model2 = gs.diamond_set(0, 0, 30, 30, True)
+    model3 = gs.double_row(0, 30, True)
+    gs.display_data(model1,0)
     min1 = execute_over_entire_pattern(model1, data)
     min2 = execute_over_entire_pattern(model2, data)
     min3 = execute_over_entire_pattern(model3, data)
@@ -181,15 +216,18 @@ def execute_over_entire_pattern(model, data):
             switch = True
         model = translations(model, 0, 10)
         print("Okay going up", y)
+        gs.display_data(model, data)
     return list_of_matches
 
 
 def main():
     print("let the games begin")
-    data = gs.mixedShape()
+    data = gs.importData()
+    data = normalize_data(data)
     #data = translations(data, 0.5, 0)
     #data = affinity.scale(data, xfact=1.2, yfact=1.2)
-    gs.display_data(data, 0)
+    #gs.display_data(data[0], 0)
+   # print(data2)
     print(best_pattern_match(data))
 
 
