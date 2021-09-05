@@ -10,11 +10,6 @@ import generateShape as gs
 # from polygonManipulation import translations
 import polygonManipulation as pm
 
-class Point:
-    def newAttr(self, hd, shape):
-        self.hd = hd
-        self.shape = shape
-
 
 class distances:
     def __init__(self, point_a, point_b, distance, index):
@@ -70,23 +65,24 @@ def find_kth(distance_arr, area):
 
 
 def assign_values(distance_arr, area, point_set_b, hd, shape, pattern):
-    for x in distance_arr:
+    for index, x in enumerate(distance_arr):
         # are the points within an area of matching points
         if (area.contains(x.point_a) or area.touches(x.point_a)) and (
                 area.contains(x.point_b) or area.touches(x.point_b)):
 
-            if hasattr(point_set_b[x.index], 'hd') == False or point_set_b[x.index].hd > hd:
-                setattr(point_set_b[x.index], 'hd', hd)
-                setattr(point_set_b[x.index], 'shape', shape)
+            if hasattr(pattern[index], 'hd') == False or pattern[index].hd > hd:
+                pattern[index].hd = hd
+                pattern[index].shape = shape
+                #setattr(pattern[index], 'hd', hd)
+                #setattr(pattern[index], 'shape', shape)
                 #print(point_set_b[x.index])
                 # point_set_b[x.index].hd = hd
                 # point_set_b[x.index].shape = shape
-    print(pattern)
+
     return pattern
 
 
 def hausdorff(point_set_a, point_set_b, shape, pattern):
-
     distances_a = minimise_euclidean_normal(point_set_a, point_set_b, True)
     matching_points = MultiPoint(distances_a[1])
     # use minimum rotated rectangle to outline the area of matching points

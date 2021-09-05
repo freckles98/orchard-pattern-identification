@@ -13,24 +13,27 @@ import numpy as np
 
 class PatternNode:
     def __init__(self, xcoord, ycoord, shape, confidence):
-        self.xcoord = xcoord
-        self.ycoord = ycoord
+        self.x = xcoord
+        self.y = ycoord
         self.shape = shape
         self.confidence = confidence
-
-
-def rotations(point_set):
-    return rotate(point_set, 15, origin='center')
-
-
-def translations(point_set, x, y):
-    return translate(point_set, x, y, 0)
 
 
 class MatchingModel:
     def __init__(self, distance, model):
         self.distance = distance
         self.model = model
+
+
+def rotations(point_set):
+    return rotate(point_set, 15, origin='center')
+
+def rotate_back(point_set):
+    return rotate(point_set, -180, origin='center')
+
+def translations(point_set, x, y):
+    return translate(point_set, x, y, 0)
+
 
 def normalize_data(data):
     num_trees = data[1]
@@ -59,7 +62,7 @@ def normalize_data(data):
     return centroids
 
 def matching_the_pattern(model, data, shape, pattern):
-    print(data)
+
     area = data.minimum_rotated_rectangle
     x, y = area.exterior.coords.xy
 
@@ -72,25 +75,20 @@ def matching_the_pattern(model, data, shape, pattern):
     # need to change the range
     for y in range(int(5)):
         for x in range(int(5)):
-            haus = hd.hausdorff(model, data, shape, pattern)
-            dist = haus[0]
-            data = haus[1]
-            if 0 <= dist < minimum:
-                minimum = dist
-            if dist != 0:
-                if 0 < dist < matching_model.distance:
+            for z in range(12):
+                haus = hd.hausdorff(model, data, shape, pattern)
+                dist = haus[0]
+                pattern = haus[1]
+                if 0 <= dist < matching_model.distance:
                     matching_model = MatchingModel(dist, model)
-
-                if switch == False:
-                    model = translations(model, 0.2, 0)
-                else:
-                    model = translations(model, -0.2, 0)
-
-
+                model = rotations(model)
+            model = rotate_back(model)
+            if switch == False:
+                model = translations(model, 0.2, 0)
             else:
-                #print("Hallelujah!", model)
-                flag = True
-                return MatchingModel(0, model), pattern
+                model = translations(model, -0.2, 0)
+
+
 
         if switch:
             switch = False
@@ -108,20 +106,16 @@ def matching_the_pattern(model, data, shape, pattern):
 def execute_over_entire_pattern(model, data, shape, pattern):
     area = data.minimum_rotated_rectangle
     xcord, ycord = area.exterior.coords.xy
-    #print(xcord, ycord)
     count = 0
     list_of_matches = []
     switch = False
-    #print("Xcord", xcord, "Ycord", ycord)
     for y in range(int(max(ycord)/10)):
         for x in range(int(max(xcord)/10)):
 
             # change this not hausdorff best pattern match
             matches = matching_the_pattern(model, data, shape, pattern)
-
             pattern = matches[1]
             list_of_matches.append(matches[0])
-
             count += 1
 
             if not switch:
@@ -162,12 +156,12 @@ def best_pattern_match(data, pattern):
                 else:
                     # gs.display_data(min3[x].model, data)
                     print("Matching pattern: double row")
-                    return min3[x].model, "Double"
+                    return min3[x].model, "Double", pattern
             elif min3[0][x].distance == -1 or min2[x].distance < min3[x].distance:
 
                 # gs.display_data(min2[x].model, data)
                 print("Matching pattern: diamond")
-                return min2[0][x].model, "Diamond"
+                return min2[0][x].model, "Diamond", pattern
 
             else:
                 # gs.display_data(min3[x].model, data)
@@ -177,21 +171,24 @@ def best_pattern_match(data, pattern):
                 if min1[0][x].distance < min2[0][x].distance and min1[0][x].distance < min3[0][x].distance:
                     # gs.display_data(min1[x].model, data)
                     print("Matching pattern: square")
-                    return min1[0][x].model, "Square", data
+                    return min1[0][x].model, "Square", pattern
                 elif min2[0][x].distance < min3[0][x].distance and min2[0][x].distance < min1[0][x].distance:
                     # gs.display_data(min2[x].model, data)
                     print("Matching pattern: diamond")
+                    return min2[0][x].model, "Diamond", pattern
                 elif min3[0][x].distance < min1[0][x].distance and min3[0][x].distance < min2[0][x].distance:
                     # gs.display_data(min3[x].model, data)
                     print("Matching pattern: double row")
+                    return min3[0][x].model, "Double", pattern
             else:
                 if min1[0][x].distance < min2[0][x].distance:
                     # gs.display_data(min1.model, data)
                     print("Matching pattern: square")
-                    return min1[0][x].model, "Square", data
+                    return min1[0][x].model, "Square", pattern
                 else:
                     # gs.display_data(min2[x].model, data)
                     print("Matching pattern: diamond")
+                    return min2[0][x].model, "Diamond", pattern
         else:
             # gs.display_data(min1[x].model, data)
             print("Matching pattern: square")
@@ -200,15 +197,20 @@ def initialize_pattern_node(points):
     pattern = []
     for index, point in enumerate(points):
         pattern.append(PatternNode(point.x, point.y, "none", np.inf))
+    return pattern
 
 def main():
     print("let the games begin")
-    #data = gs.importData()
-    #data = normalize_data(data)
     data = gs.square_set(0, 0, 30, 30, True)
+    #data = normalize_data(data)
+    #data = gs.mixedShape()
+
     pattern = initialize_pattern_node(data)
+
     best_match = best_pattern_match(data, pattern)
-    gs.display_data(best_match[2], 0)
+    #gs.display_data(best_match[2], 0)
+    print(best_match[2])
+    gs.display_data_pattern(best_match[2])
 
 
 if __name__ == "__main__":

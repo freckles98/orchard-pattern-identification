@@ -134,6 +134,32 @@ def display_data(multi, multi2):
         plt.scatter(xs, ys, s=1)
     plt.show()
 
+def display_data_pattern(multi):
+    square_y = []
+    square_x = []
+    diamond_x = []
+    diamond_y = []
+    double_x = []
+    double_y = []
+
+    for point in multi:
+        print(point.x, point.y, point.hd, point.shape)
+        if point.shape == "square":
+            square_x.append(point.x)
+            square_y.append(point.y)
+            print("here")
+        if point.shape == "diamond":
+            diamond_x.append(point.x)
+            diamond_y.append(point.y)
+        if point.shape == "double":
+            double_x.append(point.x)
+            double_y.append(point.y)
+    plt.scatter(square_x, square_y, s=1, color='red')
+    plt.scatter(diamond_x, diamond_y, s=0.5, color='blue')
+    plt.scatter(double_x, double_y, s=0.5, color='yellow')
+
+    plt.show()
+
 def main():
     # data = importData()
     # display_data(data, 0)
