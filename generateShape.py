@@ -111,33 +111,28 @@ def mixedShape():
 
 
 def display_data(multi, multi2):
+    square_y = []
+    square_x = []
     xs = [point.x for point in multi]
+    for point in multi:
+
+        if hasattr(point, 'hd') and point.hd == "square":
+            square_x.append(point.x)
+            square_y.append(point.y)
+            print("wowow")
     ys = [point.y for point in multi]
     if multi2 != 0:
-        xs2 = [point.x for point in multi2]
-        ys2 = [point.y for point in multi2]
+        xs2 = [point.x for point in multi]
+        ys2 = [point.y for point in multi]
+
         plt.scatter(xs2, ys2, s=1)
         plt.scatter(xs, ys, s=0.5)
     else:
+        if len(square_x) != 0:
+            print("happening?")
+            plt.scatter(square_x, square_y, s=1, color='red')
         plt.scatter(xs, ys, s=1)
     plt.show()
-    # fig = pyplot.figure(1, dpi=90)
-    # fig.set_frameon(True)
-    # ax = fig.add_subplot(122)
-    # for p in multi:
-    #   ax.plot(p.x, p.y, 'o')
-    # hull1 = multi.minimum_rotated_rectangle
-    # patch1 = PolygonPatch(hull1, alpha=0.5, zorder=2)
-    # ax.add_patch(patch1)
-    # ax.set_title('b) N > 2')
-    #
-    # set_limits(ax, -1, 4, -1, 3)
-    #
-    # pyplot.show()
-
-
-
-
 
 def main():
     # data = importData()
