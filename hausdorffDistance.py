@@ -1,4 +1,5 @@
 import math
+import time
 
 import numpy as np
 from shapely.geometry import MultiPoint, Point, Polygon
@@ -21,13 +22,6 @@ class distances:
     def toStrings(self):
         print(self.point_a, self.point_b, self.distance)
 
-
-def closest_node(node, nodes):
-    nodes = np.asarray(nodes)
-    closest_index = distance.cdist([node], nodes).argmin()
-    return nodes[closest_index]
-
-
 def ckdnearest(point, btree):
     dist, idx = btree.query(point, k=1)
     return (idx, dist)
@@ -36,7 +30,10 @@ def ckdnearest(point, btree):
 def minimise_euclidean_normal(point_set_a, point_set_b, cal_match):
     distances_set = []
     matching_set = []
-    btree = cKDTree(point_set_b)
+    btreestart = time.time()
+    btree = cKDTree(point_set_b, balanced_tree=False)
+    btreeend = time.time()
+
     for index, point in enumerate(point_set_a):
         nearest_geoms = ckdnearest(point, btree)
         distances_set.append(distances(point, point_set_b[nearest_geoms[0]], nearest_geoms[1], index))
@@ -44,6 +41,20 @@ def minimise_euclidean_normal(point_set_a, point_set_b, cal_match):
             matching_set.append(point)
     return distances_set, matching_set
 
+
+def minimise_euclidean_normal2(point_set_a, point_set_b, area):
+    distances_set = []
+
+
+    btree = cKDTree(point_set_b, balanced_tree=False)
+
+
+    for index, point in enumerate(point_set_a):
+        nearest_geoms = ckdnearest(point, btree)
+        if (area.contains(point_set_b[nearest_geoms[0]]) or area.touches(point_set_b[nearest_geoms[0]])):
+            distances_set.append(distances(point, point_set_b[nearest_geoms[0]], nearest_geoms[1], index))
+
+    return distances_set
 
 def find_kth(distance_arr, area):
     maximum = 0
@@ -73,21 +84,20 @@ def assign_values(distance_arr, area, point_set_b, hd, shape, pattern):
             if hasattr(pattern[index], 'hd') == False or pattern[index].hd > hd:
                 pattern[index].hd = hd
                 pattern[index].shape = shape
-                #setattr(pattern[index], 'hd', hd)
-                #setattr(pattern[index], 'shape', shape)
-                #print(point_set_b[x.index])
-                # point_set_b[x.index].hd = hd
-                # point_set_b[x.index].shape = shape
 
     return pattern
 
 
 def hausdorff(point_set_a, point_set_b, shape, pattern):
+
     distances_a = minimise_euclidean_normal(point_set_a, point_set_b, True)
+
+
     matching_points = MultiPoint(distances_a[1])
     # use minimum rotated rectangle to outline the area of matching points
     area = matching_points.minimum_rotated_rectangle
-    distances_b = minimise_euclidean_normal(point_set_b, point_set_a, False)
+
+    distances_b = minimise_euclidean_normal(point_set_b, point_set_a, area)
 
     # find the largest separate
     max_a = find_kth(distances_a[0], area)
@@ -98,9 +108,8 @@ def hausdorff(point_set_a, point_set_b, shape, pattern):
     else:
         maximum = max_b
     array = assign_values(distances_b[0], area, point_set_b, maximum, shape, pattern)
-    #print(array[0].hd)
-#    if hasattr(array[0], 'hd'):
- #       print(array[0].hd)
+
+
     return maximum, array
 
 

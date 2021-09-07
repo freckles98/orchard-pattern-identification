@@ -1,4 +1,5 @@
 import math
+import time
 
 import shapely.affinity
 from shapely.affinity import affine_transform, translate, rotate
@@ -9,6 +10,7 @@ from shapely.geometry import Point
 import generateShape as gs
 import hausdorffDistance as hd
 import numpy as np
+import multiprocessing as mp
 
 
 class PatternNode:
@@ -61,28 +63,30 @@ def normalize_data(data):
     gs.display_data(centroids, 0)
     return centroids
 
-def matching_the_pattern(model, data, shape, pattern):
-
-    area = data.minimum_rotated_rectangle
-    x, y = area.exterior.coords.xy
+def matching_the_pattern(model, data_set, shape, pattern, data):
 
     minimum = np.inf
     matching_model = MatchingModel(minimum, model)
-
+    final_pattern = []
     switch = False
     flag = False
-
+    start = time.time()
     # need to change the range
     for y in range(int(5)):
         for x in range(int(5)):
             for z in range(12):
-                haus = hd.hausdorff(model, data, shape, pattern)
+
+                haus = hd.hausdorff(model, data_set, shape, pattern)
                 dist = haus[0]
                 pattern = haus[1]
                 if 0 <= dist < matching_model.distance:
                     matching_model = MatchingModel(dist, model)
+                    final_pattern = pattern
                 model = rotations(model)
+
+
             model = rotate_back(model)
+            print("end of rotations", x)
             if switch == False:
                 model = translations(model, 0.2, 0)
             else:
@@ -97,37 +101,54 @@ def matching_the_pattern(model, data, shape, pattern):
         if flag == True:
             break
         model = translations(model, 0, 0.2)
-        #gs.display_data(model, data)
+        #gs.display_data(data, matching_model.model)
 
     #if minimum == np.inf:
         #print("no match")
-    return (matching_model, pattern)
+    #gs.display_data(matching_model.model, data)
+    #gs.display_data(data, 0)
+    gs.display_data(matching_model.model,0)
+    end = time.time()
+    print(end-start)
+    return (matching_model, final_pattern)
 
 def execute_over_entire_pattern(model, data, shape, pattern):
     area = data.minimum_rotated_rectangle
     xcord, ycord = area.exterior.coords.xy
-    count = 0
+
     list_of_matches = []
     switch = False
-    for y in range(int(max(ycord)/10)):
-        for x in range(int(max(xcord)/10)):
 
+    for y in range(0, int(max(ycord)), 30):
+
+        for x in range(0, int(max(xcord)), 30):
+
+            area = model.minimum_rotated_rectangle
+            data_set = []
+            for point in data:
+                if area.contains(point) or area.touches(point):
+                    data_set.append(point)
+            data_set = gs.to_multipoint(data_set)
+            #print(data_set[0])
+
+            gs.display_data(data_set, 0)
             # change this not hausdorff best pattern match
-            matches = matching_the_pattern(model, data, shape, pattern)
-            pattern = matches[1]
-            list_of_matches.append(matches[0])
-            count += 1
+            if len(data_set) > 0:
+                matches = matching_the_pattern(model, data_set, shape, pattern, data)
+                pattern = matches[1]
+                list_of_matches.append(matches[0])
+
 
             if not switch:
-                model = translations(model, 10, 0)
+                model = translations(model, 30, 0)
             else:
-                model = translations(model, -10, 0)
+                model = translations(model, -30, 0)
 
         if switch:
             switch = False
         else:
             switch = True
-        model = translations(model, 0, 10)
+        model = translations(model, 0, 30)
         print("Okay going up", y)
         #gs.display_data(model, data)
     return list_of_matches, pattern
@@ -140,6 +161,7 @@ def best_pattern_match(data, pattern):
     model2 = gs.diamond_set(0, 0, 30, 30, True)
     model3 = gs.double_row(0, 30, True)
     gs.display_data(model1, 0)
+    pool = mp.Pool(mp.cpu_count())
     min1 = execute_over_entire_pattern(model1, data, "square", pattern)
     pattern = min1[1]
     min2 = execute_over_entire_pattern(model2, data, "diamond", pattern)
@@ -201,9 +223,10 @@ def initialize_pattern_node(points):
 
 def main():
     print("let the games begin")
-    data = gs.square_set(0, 0, 30, 30, True)
-    #data = normalize_data(data)
-    #data = gs.mixedShape()
+    #data = gs.square_set(0, 0, 30, 30, True)
+    data = gs.importData()
+    data = normalize_data(data)
+
 
     pattern = initialize_pattern_node(data)
 

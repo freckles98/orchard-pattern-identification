@@ -114,23 +114,17 @@ def display_data(multi, multi2):
     square_y = []
     square_x = []
     xs = [point.x for point in multi]
-    for point in multi:
-
-        if hasattr(point, 'hd') and point.hd == "square":
-            square_x.append(point.x)
-            square_y.append(point.y)
-            print("wowow")
     ys = [point.y for point in multi]
+
+
     if multi2 != 0:
         xs2 = [point.x for point in multi]
         ys2 = [point.y for point in multi]
 
         plt.scatter(xs2, ys2, s=1)
-        plt.scatter(xs, ys, s=0.5)
+        plt.scatter(xs, ys, s=2)
     else:
-        if len(square_x) != 0:
-            print("happening?")
-            plt.scatter(square_x, square_y, s=1, color='red')
+
         plt.scatter(xs, ys, s=1)
     plt.show()
 
