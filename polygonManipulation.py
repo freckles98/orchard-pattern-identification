@@ -82,10 +82,9 @@ def matching_the_pattern(model, data_set, shape, pattern, data):
                 pattern = haus[1]
                 if 0 <= dist < matching_model.distance:
                     matching_model = MatchingModel(dist, model)
-                    final_pattern.append(pattern)
+                    final_pattern = pattern
                 model = rotations(model)
 
-                print("rotate")
             model = rotate_back(model)
             print("end of rotations", x)
             if switch == False:
@@ -120,9 +119,9 @@ def execute_over_entire_pattern(model, data, shape, pattern):
     list_of_matches = []
     switch = False
 
-    for y in range(0, int(max(ycord)), 30):
+    for y in range(0, int(max(ycord)), 10):
 
-        for x in range(0, int(max(xcord)), 30):
+        for x in range(0, int(max(xcord)), 10):
 
             area = model.minimum_rotated_rectangle
             data_set = []
@@ -136,20 +135,20 @@ def execute_over_entire_pattern(model, data, shape, pattern):
             # change this not hausdorff best pattern match
             if len(data_set) > 0:
                 matches = matching_the_pattern(model, data_set, shape, pattern, data)
-                pattern = matches[1]
+                pattern.append(matches[1])
                 list_of_matches.append(matches[0])
 
 
             if not switch:
-                model = translations(model, 30, 0)
+                model = translations(model, 10, 0)
             else:
-                model = translations(model, -30, 0)
+                model = translations(model, -10, 0)
 
         if switch:
             switch = False
         else:
             switch = True
-        model = translations(model, 0, 30)
+        model = translations(model, 0, 10)
         print("Okay going up", y)
         #gs.display_data(model, data)
     return list_of_matches, pattern
@@ -158,17 +157,25 @@ def execute_over_entire_pattern(model, data, shape, pattern):
 
 
 def best_pattern_match(data, pattern):
-    model1 = gs.square_set(0, 0, 30, 30, True)
-    model2 = gs.diamond_set(0, 0, 30, 30, True)
-    model3 = gs.double_row(0, 30, True)
+    model1 = gs.square_set(0, 0, 10, 10, True)
+    model2 = gs.diamond_set(0, 0, 10, 10, True)
+    model3 = gs.double_row(0, 10, True)
     gs.display_data(model1, 0)
     pool = mp.Pool(mp.cpu_count())
     min1 = execute_over_entire_pattern(model1, data, "square", pattern)
-    pattern = min1[1]
+    pattern_square = min1[1]
+    gs.display_data_pattern(pattern_square, data)
+
+
     min2 = execute_over_entire_pattern(model2, data, "diamond", pattern)
-    pattern = min2[1]
+    pattern_diamond = min2[1]
     min3 = execute_over_entire_pattern(model3, data, "double", pattern)
-    pattern = min3[1]
+    pattern_double_row = min3[1]
+
+    for x in range(len(pattern_square)):
+        if pattern_square[x].confidence < pattern_diamond[x].confidence:
+            if pattern_square[x].confidence < pattern_double_row[x].confidence:
+                return
 
     print("Min1", min1[0][0].distance, "min2", min2[0][0].distance, "min3", min3[0][0].distance)
     for x in range(len(min1)):

@@ -35,7 +35,7 @@ def minimise_euclidean_normal(point_set_a, point_set_b, cal_match):
     btreeend = time.time()
 
     for index, point in enumerate(point_set_a):
-        print(point.uid)
+
         nearest_geoms = ckdnearest(point, btree)
         distances_set.append(distances(point, point_set_b[nearest_geoms[0]], nearest_geoms[1], index))
         #print("This is the nearest point", point.x, point_set_b[nearest_geoms[0]].x, point.y, point_set_b[nearest_geoms[0]].y)
@@ -74,25 +74,17 @@ def find_kth(distance_arr, area):
                 maximum = distance
 
     if count == 0:
-        return -1
+        return np.inf
     return maximum
 
 
 def assign_values(distance_arr, area, point_set_b, hd, shape, pattern):
-    for x in distance_arr:
+    for index, point in enumerate(distance_arr):
         # are the points within an area of matching points
-        the_index = 0
-        p_b = x.point_b
-        #print("This is the point", p_b.x, p_b.y)
-        for index, point in enumerate(pattern):
-            #print("Point",point.point.x, p_b.x,point.point.y,p_b.y)
-            if point.point.x == p_b.x and point.point.y == p_b.y:
 
-                #print("Point", p_b.x)
-                the_index = index
-                if hasattr(pattern[the_index], 'hd') == False or pattern[the_index].hd > hd:
-                    pattern[the_index].hd = hd
-                    pattern[the_index].shape = shape
+        if hasattr(pattern[index], 'hd') == False or pattern[index].hd > hd:
+                pattern[index].hd = hd
+                pattern[index].shape = shape
 
 
 
@@ -118,9 +110,9 @@ def hausdorff(point_set_a, point_set_b, shape, pattern):
         maximum = max_a
     else:
         maximum = max_b
-    print("hello")
+
     array = assign_values(distances_a[0], area, point_set_b, maximum, shape, pattern)
-    print("goodbye")
+
 
     return maximum, array
 

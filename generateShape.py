@@ -32,9 +32,7 @@ def importData():
                 y += polygon[coordinate][1]
             x_ave = x / polygon_length
             y_ave = y / polygon_length
-            point = Point(x_ave, y_ave)
-            point.uid = coordinate
-            point_set.append(point)
+            point_set.append(Point(x_ave, y_ave))
         # other_set.append(polygon.centroid) maybe look at using centroid method
 
     return MultiPoint(point_set), len(features)
@@ -130,19 +128,22 @@ def display_data(multi, multi2):
         plt.scatter(xs, ys, s=1)
     plt.show()
 
-def display_data_pattern(multi):
+def display_data_pattern(multi, data):
     square_y = []
     square_x = []
     diamond_x = []
     diamond_y = []
     double_x = []
     double_y = []
+    xs = [point.x for point in data]
+    ys = [point.y for point in data]
 
     for point in multi:
         print(point.x, point.y, point.hd, point.shape)
         if point.shape == "square":
-            square_x.append(point.x)
-            square_y.append(point.y)
+            if point.hd < 0.22:
+                square_x.append(point.x)
+                square_y.append(point.y)
             print("here")
         if point.shape == "diamond":
             diamond_x.append(point.x)
@@ -150,6 +151,7 @@ def display_data_pattern(multi):
         if point.shape == "double":
             double_x.append(point.x)
             double_y.append(point.y)
+    plt.scatter(xs, ys, s=0.5, colour='blue')
     plt.scatter(square_x, square_y, s=1, color='red')
     plt.scatter(diamond_x, diamond_y, s=0.5, color='blue')
     plt.scatter(double_x, double_y, s=0.5, color='yellow')
