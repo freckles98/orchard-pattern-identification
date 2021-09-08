@@ -35,8 +35,10 @@ def minimise_euclidean_normal(point_set_a, point_set_b, cal_match):
     btreeend = time.time()
 
     for index, point in enumerate(point_set_a):
+        print(point.uid)
         nearest_geoms = ckdnearest(point, btree)
         distances_set.append(distances(point, point_set_b[nearest_geoms[0]], nearest_geoms[1], index))
+        #print("This is the nearest point", point.x, point_set_b[nearest_geoms[0]].x, point.y, point_set_b[nearest_geoms[0]].y)
         if cal_match and nearest_geoms[1] < 0.22:
             matching_set.append(point)
     return distances_set, matching_set
@@ -53,6 +55,7 @@ def minimise_euclidean_normal2(point_set_a, point_set_b, area):
         nearest_geoms = ckdnearest(point, btree)
         if (area.contains(point_set_b[nearest_geoms[0]]) or area.touches(point_set_b[nearest_geoms[0]])):
             distances_set.append(distances(point, point_set_b[nearest_geoms[0]], nearest_geoms[1], index))
+            print("This is the nearest point",point_set_b[nearest_geoms[0]].x, point_set_b[nearest_geoms[0]].y)
 
     return distances_set
 
@@ -76,14 +79,22 @@ def find_kth(distance_arr, area):
 
 
 def assign_values(distance_arr, area, point_set_b, hd, shape, pattern):
-    for index, x in enumerate(distance_arr):
+    for x in distance_arr:
         # are the points within an area of matching points
-        if (area.contains(x.point_a) or area.touches(x.point_a)) and (
-                area.contains(x.point_b) or area.touches(x.point_b)):
+        the_index = 0
+        p_b = x.point_b
+        #print("This is the point", p_b.x, p_b.y)
+        for index, point in enumerate(pattern):
+            #print("Point",point.point.x, p_b.x,point.point.y,p_b.y)
+            if point.point.x == p_b.x and point.point.y == p_b.y:
 
-            if hasattr(pattern[index], 'hd') == False or pattern[index].hd > hd:
-                pattern[index].hd = hd
-                pattern[index].shape = shape
+                #print("Point", p_b.x)
+                the_index = index
+                if hasattr(pattern[the_index], 'hd') == False or pattern[the_index].hd > hd:
+                    pattern[the_index].hd = hd
+                    pattern[the_index].shape = shape
+
+
 
     return pattern
 
@@ -107,8 +118,9 @@ def hausdorff(point_set_a, point_set_b, shape, pattern):
         maximum = max_a
     else:
         maximum = max_b
-    array = assign_values(distances_b[0], area, point_set_b, maximum, shape, pattern)
-
+    print("hello")
+    array = assign_values(distances_a[0], area, point_set_b, maximum, shape, pattern)
+    print("goodbye")
 
     return maximum, array
 

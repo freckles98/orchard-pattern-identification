@@ -32,7 +32,9 @@ def importData():
                 y += polygon[coordinate][1]
             x_ave = x / polygon_length
             y_ave = y / polygon_length
-            point_set.append(Point(x_ave, y_ave))
+            point = Point(x_ave, y_ave)
+            point.uid = coordinate
+            point_set.append(point)
         # other_set.append(polygon.centroid) maybe look at using centroid method
 
     return MultiPoint(point_set), len(features)

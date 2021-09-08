@@ -14,11 +14,12 @@ import multiprocessing as mp
 
 
 class PatternNode:
-    def __init__(self, xcoord, ycoord, shape, confidence):
-        self.x = xcoord
-        self.y = ycoord
+    def __init__(self, point, shape, confidence):
+        self.point = point
         self.shape = shape
         self.confidence = confidence
+
+
 
 
 class MatchingModel:
@@ -81,10 +82,10 @@ def matching_the_pattern(model, data_set, shape, pattern, data):
                 pattern = haus[1]
                 if 0 <= dist < matching_model.distance:
                     matching_model = MatchingModel(dist, model)
-                    final_pattern = pattern
+                    final_pattern.append(pattern)
                 model = rotations(model)
 
-
+                print("rotate")
             model = rotate_back(model)
             print("end of rotations", x)
             if switch == False:
@@ -218,7 +219,8 @@ def best_pattern_match(data, pattern):
 def initialize_pattern_node(points):
     pattern = []
     for index, point in enumerate(points):
-        pattern.append(PatternNode(point.x, point.y, "none", np.inf))
+
+        pattern.append(PatternNode(Point(point.x, point.y), "none", np.inf))
     return pattern
 
 def main():
