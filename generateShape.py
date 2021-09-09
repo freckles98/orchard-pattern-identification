@@ -1,3 +1,5 @@
+import math
+
 import shapely.coords
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import plot
@@ -15,14 +17,30 @@ from scipy.spatial import cKDTree
 # from figures import GRAY, BLUE, SIZE, set_limits, plot_line
 from shapely.ops import nearest_points
 
+def determine_ave_confidence(orchard):
+    with open(orchard) as f:
+        features = json.load(f)["features"]
+    ave = 0
+    var = 0
+    for feature in features:
+        ave += feature['properties']['confidence']
+    average = ave/len(features)
 
-def importData():
-    with open("raw_detections2.geojson") as f:
+    for feature in features:
+        var += (feature['properties']['confidence'] - average)**2
+    std = math.sqrt(var/len(features))
+    return average, std
+
+
+def importData(orchard, ave_confidence):
+    with open(orchard) as f:
         features = json.load(f)["features"]
     point_set = []
     other_set = []
+
     for feature in features:
-        if feature['properties']['confidence'] > 0.2:
+
+        if feature['properties']['confidence'] > ave_confidence:
             polygon = feature['geometry']['coordinates'][0]
             polygon_length = len(polygon)
             x = 0
@@ -138,20 +156,21 @@ def display_data_pattern(multi, data):
     xs = [point.x for point in data]
     ys = [point.y for point in data]
 
-    for point in multi:
-        print(point.x, point.y, point.hd, point.shape)
-        if point.shape == "square":
-            if point.hd < 0.22:
-                square_x.append(point.x)
-                square_y.append(point.y)
-            print("here")
-        if point.shape == "diamond":
-            diamond_x.append(point.x)
-            diamond_y.append(point.y)
-        if point.shape == "double":
-            double_x.append(point.x)
-            double_y.append(point.y)
-    plt.scatter(xs, ys, s=0.5, colour='blue')
+    for list in multi:
+        for point in list:
+            print(point.point.x, point.point.y, point.confidence, point.shape)
+            if point.shape == "none":
+                if point.confidence < 0.22:
+                    square_x.append(point.point.x)
+                    square_y.append(point.point.y)
+                print("here")
+            if point.shape == "diamond":
+                diamond_x.append(point.point.x)
+                diamond_y.append(point.point.y)
+            if point.shape == "double":
+                double_x.append(point.point.x)
+                double_y.append(point.point.y)
+    plt.scatter(xs, ys, s=0.5, color='blue')
     plt.scatter(square_x, square_y, s=1, color='red')
     plt.scatter(diamond_x, diamond_y, s=0.5, color='blue')
     plt.scatter(double_x, double_y, s=0.5, color='yellow')

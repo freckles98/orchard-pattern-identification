@@ -78,20 +78,10 @@ def find_kth(distance_arr, area):
     return maximum
 
 
-def assign_values(distance_arr, area, point_set_b, hd, shape, pattern):
-    for index, point in enumerate(distance_arr):
-        # are the points within an area of matching points
-
-        if hasattr(pattern[index], 'hd') == False or pattern[index].hd > hd:
-                pattern[index].hd = hd
-                pattern[index].shape = shape
 
 
 
-    return pattern
-
-
-def hausdorff(point_set_a, point_set_b, shape, pattern):
+def hausdorff(point_set_a, point_set_b):
 
     distances_a = minimise_euclidean_normal(point_set_a, point_set_b, True)
 
@@ -111,10 +101,10 @@ def hausdorff(point_set_a, point_set_b, shape, pattern):
     else:
         maximum = max_b
 
-    array = assign_values(distances_a[0], area, point_set_b, maximum, shape, pattern)
+    #array = assign_values(distances_a[0], area, point_set_b, maximum, shape, pattern)
 
 
-    return maximum, array
+    return maximum
 
 
 def main():

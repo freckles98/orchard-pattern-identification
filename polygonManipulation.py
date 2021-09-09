@@ -28,6 +28,7 @@ class MatchingModel:
         self.model = model
 
 
+
 def rotations(point_set):
     return rotate(point_set, 15, origin='center')
 
@@ -77,12 +78,12 @@ def matching_the_pattern(model, data_set, shape, pattern, data):
         for x in range(int(5)):
             for z in range(12):
 
-                haus = hd.hausdorff(model, data_set, shape, pattern)
-                dist = haus[0]
-                pattern = haus[1]
+                haus = hd.hausdorff(model, data_set)
+                dist = haus
+
                 if 0 <= dist < matching_model.distance:
                     matching_model = MatchingModel(dist, model)
-                    final_pattern = pattern
+
                 model = rotations(model)
 
             model = rotate_back(model)
@@ -107,12 +108,19 @@ def matching_the_pattern(model, data_set, shape, pattern, data):
         #print("no match")
     #gs.display_data(matching_model.model, data)
     #gs.display_data(data, 0)
-    gs.display_data(matching_model.model,0)
+    #gs.display_data(matching_model.model,0)
     end = time.time()
     print(end-start)
+    final_pattern = assign_pattern(matching_model.distance, shape, data)
     return (matching_model, final_pattern)
 
-def execute_over_entire_pattern(model, data, shape, pattern):
+def assign_pattern(minimum, shape, data):
+    pattern =[]
+    for point in data:
+        pattern.append(PatternNode(point, shape, minimum))
+    return pattern
+
+def execute_over_entire_pattern(model, data, shape):
     area = data.minimum_rotated_rectangle
     xcord, ycord = area.exterior.coords.xy
 
@@ -131,7 +139,7 @@ def execute_over_entire_pattern(model, data, shape, pattern):
             data_set = gs.to_multipoint(data_set)
             #print(data_set[0])
 
-            gs.display_data(data_set, 0)
+            #gs.display_data(data_set, 0)
             # change this not hausdorff best pattern match
             if len(data_set) > 0:
                 matches = matching_the_pattern(model, data_set, shape, pattern, data)
@@ -156,72 +164,76 @@ def execute_over_entire_pattern(model, data, shape, pattern):
 
 
 
-def best_pattern_match(data, pattern):
+def best_pattern_match(data):
     model1 = gs.square_set(0, 0, 10, 10, True)
     model2 = gs.diamond_set(0, 0, 10, 10, True)
     model3 = gs.double_row(0, 10, True)
     gs.display_data(model1, 0)
-    pool = mp.Pool(mp.cpu_count())
-    min1 = execute_over_entire_pattern(model1, data, "square", pattern)
+    #pool = mp.Pool(mp.cpu_count())
+    min1 = execute_over_entire_pattern(model1, data, "square")
     pattern_square = min1[1]
     gs.display_data_pattern(pattern_square, data)
 
 
-    min2 = execute_over_entire_pattern(model2, data, "diamond", pattern)
+    min2 = execute_over_entire_pattern(model2, data, "diamond")
     pattern_diamond = min2[1]
-    min3 = execute_over_entire_pattern(model3, data, "double", pattern)
+    min3 = execute_over_entire_pattern(model3, data, "double")
     pattern_double_row = min3[1]
+    pattern = []
 
-    for x in range(len(pattern_square)):
-        if pattern_square[x].confidence < pattern_diamond[x].confidence:
-            if pattern_square[x].confidence < pattern_double_row[x].confidence:
-                return
+    for list in range(len(pattern_square)):
+        for point in range(list):
 
-    print("Min1", min1[0][0].distance, "min2", min2[0][0].distance, "min3", min3[0][0].distance)
-    for x in range(len(min1)):
-        if min1[0][x].distance == -1:
-            if min2[0][x].distance == -1:
-                if min3[0][x].distance == -1:
-                    print("No match")
-                else:
-                    # gs.display_data(min3[x].model, data)
-                    print("Matching pattern: double row")
-                    return min3[x].model, "Double", pattern
-            elif min3[0][x].distance == -1 or min2[x].distance < min3[x].distance:
+            if pattern_square[list][point].confidence < pattern_diamond[list][point].confidence:
+                if pattern_square[list][point].confidence < pattern_double_row[list][point].confidence:
 
-                # gs.display_data(min2[x].model, data)
-                print("Matching pattern: diamond")
-                return min2[0][x].model, "Diamond", pattern
+                    pattern.append(PatternNode(pattern_square[list][point].point, pattern_square[list][point].,pattern_square[list][point]
 
-            else:
-                # gs.display_data(min3[x].model, data)
-                print("Matching pattern: double row")
-        elif min2[0][x].distance != -1:
-            if min3[0][x].distance != -1:
-                if min1[0][x].distance < min2[0][x].distance and min1[0][x].distance < min3[0][x].distance:
-                    # gs.display_data(min1[x].model, data)
-                    print("Matching pattern: square")
-                    return min1[0][x].model, "Square", pattern
-                elif min2[0][x].distance < min3[0][x].distance and min2[0][x].distance < min1[0][x].distance:
-                    # gs.display_data(min2[x].model, data)
-                    print("Matching pattern: diamond")
-                    return min2[0][x].model, "Diamond", pattern
-                elif min3[0][x].distance < min1[0][x].distance and min3[0][x].distance < min2[0][x].distance:
-                    # gs.display_data(min3[x].model, data)
-                    print("Matching pattern: double row")
-                    return min3[0][x].model, "Double", pattern
-            else:
-                if min1[0][x].distance < min2[0][x].distance:
-                    # gs.display_data(min1.model, data)
-                    print("Matching pattern: square")
-                    return min1[0][x].model, "Square", pattern
-                else:
-                    # gs.display_data(min2[x].model, data)
-                    print("Matching pattern: diamond")
-                    return min2[0][x].model, "Diamond", pattern
-        else:
-            # gs.display_data(min1[x].model, data)
-            print("Matching pattern: square")
+    # print("Min1", min1[0][0].distance, "min2", min2[0][0].distance, "min3", min3[0][0].distance)
+    # for x in range(len(min1)):
+    #     if min1[0][x].distance == -1:
+    #         if min2[0][x].distance == -1:
+    #             if min3[0][x].distance == -1:
+    #                 print("No match")
+    #             else:
+    #                 # gs.display_data(min3[x].model, data)
+    #                 print("Matching pattern: double row")
+    #                 return min3[x].model, "Double", pattern
+    #         elif min3[0][x].distance == -1 or min2[x].distance < min3[x].distance:
+    #
+    #             # gs.display_data(min2[x].model, data)
+    #             print("Matching pattern: diamond")
+    #             return min2[0][x].model, "Diamond", pattern
+    #
+    #         else:
+    #             # gs.display_data(min3[x].model, data)
+    #             print("Matching pattern: double row")
+    #     elif min2[0][x].distance != -1:
+    #         if min3[0][x].distance != -1:
+    #             if min1[0][x].distance < min2[0][x].distance and min1[0][x].distance < min3[0][x].distance:
+    #                 # gs.display_data(min1[x].model, data)
+    #                 print("Matching pattern: square")
+    #                 return min1[0][x].model, "Square", pattern
+    #             elif min2[0][x].distance < min3[0][x].distance and min2[0][x].distance < min1[0][x].distance:
+    #                 # gs.display_data(min2[x].model, data)
+    #                 print("Matching pattern: diamond")
+    #                 return min2[0][x].model, "Diamond", pattern
+    #             elif min3[0][x].distance < min1[0][x].distance and min3[0][x].distance < min2[0][x].distance:
+    #                 # gs.display_data(min3[x].model, data)
+    #                 print("Matching pattern: double row")
+    #                 return min3[0][x].model, "Double", pattern
+    #         else:
+    #             if min1[0][x].distance < min2[0][x].distance:
+    #                 # gs.display_data(min1.model, data)
+    #                 print("Matching pattern: square")
+    #                 return min1[0][x].model, "Square", pattern
+    #             else:
+    #                 # gs.display_data(min2[x].model, data)
+    #                 print("Matching pattern: diamond")
+    #                 return min2[0][x].model, "Diamond", pattern
+    #     else:
+    #         # gs.display_data(min1[x].model, data)
+    #         print("Matching pattern: square")
 
 def initialize_pattern_node(points):
     pattern = []
@@ -231,15 +243,23 @@ def initialize_pattern_node(points):
     return pattern
 
 def main():
-    print("let the games begin")
+
+    orchard_number = input("Please enter number: ")
+    orchard_file = "raw_"+orchard_number+".geojson"
+    ave = gs.determine_ave_confidence(orchard_file)
+    print("Average",ave[0])
+    print("std dev", ave[1])
     #data = gs.square_set(0, 0, 30, 30, True)
-    data = gs.importData()
+    data = gs.importData(orchard_file, ave[0] - ave[1])
+
+    data2 = gs.importData(orchard_file, ave[0])
+    gs.display_data(data2[0],0)
     data = normalize_data(data)
 
 
     pattern = initialize_pattern_node(data)
-
-    best_match = best_pattern_match(data, pattern)
+#    gs.display_data_pattern(pattern, data)
+    best_match = best_pattern_match(data)
     #gs.display_data(best_match[2], 0)
     print(best_match[2])
     gs.display_data_pattern(best_match[2])
