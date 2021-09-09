@@ -177,6 +177,41 @@ def display_data_pattern(multi, data):
 
     plt.show()
 
+def display_final_data_pattern(multi, data):
+    square_y = []
+    square_x = []
+    diamond_x = []
+    diamond_y = []
+    double_x = []
+    double_y = []
+    none_x = []
+    none_y = []
+    xs = [point.x for point in data]
+    ys = [point.y for point in data]
+
+
+    for point in multi:
+        print(point.point.x, point.point.y, point.confidence, point.shape)
+        if point.shape == "square":
+            square_x.append(point.point.x)
+            square_y.append(point.point.y)
+        if point.shape == "diamond":
+            diamond_x.append(point.point.x)
+            diamond_y.append(point.point.y)
+        if point.shape == "double":
+            double_x.append(point.point.x)
+            double_y.append(point.point.y)
+        if point.shape == "none":
+            none_x.append(point.point.x)
+            none_y.append(point.point.y)
+    plt.scatter(xs, ys, s=0.5, color='blue')
+    plt.scatter(square_x, square_y, s=1, color='red')
+    plt.scatter(diamond_x, diamond_y, s=0.5, color='blue')
+    plt.scatter(double_x, double_y, s=0.5, color='yellow')
+    plt.scatter(none_x, none_y, s=0.5, color='black')
+
+    plt.show()
+
 def main():
     # data = importData()
     # display_data(data, 0)

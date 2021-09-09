@@ -65,7 +65,7 @@ def normalize_data(data):
     gs.display_data(centroids, 0)
     return centroids
 
-def matching_the_pattern(model, data_set, shape, pattern, data):
+def matching_the_pattern(model, data_set, shape, data):
 
     minimum = np.inf
     matching_model = MatchingModel(minimum, model)
@@ -126,7 +126,7 @@ def execute_over_entire_pattern(model, data, shape):
 
     list_of_matches = []
     switch = False
-
+    pattern =[]
     for y in range(0, int(max(ycord)), 10):
 
         for x in range(0, int(max(xcord)), 10):
@@ -142,7 +142,7 @@ def execute_over_entire_pattern(model, data, shape):
             #gs.display_data(data_set, 0)
             # change this not hausdorff best pattern match
             if len(data_set) > 0:
-                matches = matching_the_pattern(model, data_set, shape, pattern, data)
+                matches = matching_the_pattern(model, data_set, shape,  data)
                 pattern.append(matches[1])
                 list_of_matches.append(matches[0])
 
@@ -187,7 +187,28 @@ def best_pattern_match(data):
             if pattern_square[list][point].confidence < pattern_diamond[list][point].confidence:
                 if pattern_square[list][point].confidence < pattern_double_row[list][point].confidence:
 
-                    pattern.append(PatternNode(pattern_square[list][point].point, pattern_square[list][point].,pattern_square[list][point]
+                    pattern.append(PatternNode(pattern_square[list][point].point, pattern_square[list][point].shape,pattern_square[list][point].confidence))
+
+                elif pattern_square[list][point].confidence > pattern_double_row[list][point].confidence:
+                    pattern.append(PatternNode(pattern_double_row[list][point].point, pattern_double_row[list][point].shape,
+                                               pattern_double_row[list][point].confidence))
+                else:
+                    pattern.append(PatternNode(pattern_square[list][point].point, "none", np.inf))
+            elif pattern_square[list][point].confidence > pattern_diamond[list][point].confidence:
+                if pattern_diamond[list][point].confidence < pattern_double_row[list][point].confidence:
+
+                    pattern.append(PatternNode(pattern_diamond[list][point].point, pattern_diamond[list][point].shape,pattern_diamond[list][point].confidence))
+
+                elif pattern_diamond[list][point].confidence > pattern_double_row[list][point].confidence:
+                    pattern.append(PatternNode(pattern_double_row[list][point].point, pattern_double_row[list][point].shape,
+                                               pattern_double_row[list][point].confidence))
+                else:
+                    pattern.append(PatternNode(pattern_square[list][point].point, "none", np.inf))
+            else:
+                pattern.append(PatternNode(pattern_square[list][point].point, "none", np.inf))
+    gs.display_final_data_pattern(pattern, data)
+    return pattern
+
 
     # print("Min1", min1[0][0].distance, "min2", min2[0][0].distance, "min3", min3[0][0].distance)
     # for x in range(len(min1)):
