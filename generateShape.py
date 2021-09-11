@@ -61,8 +61,8 @@ def square_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_poi
     point_set = []
     end_y = range_end_y+range_start_y
     end_x = range_end_x+range_start_x
-    for y in range(range_start_y, end_y,2):
-        for x in range(range_start_x, end_x,2):
+    for y in range(range_start_y, end_y):
+        for x in range(range_start_x, end_x):
             point_set.append(Point(x, y))
 
     if multi_point_bool:
@@ -70,19 +70,20 @@ def square_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_poi
     return point_set
 # generate set of square
 
-def diamond_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
+def quincunx_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
     point_set = []
     skip = False
 
     for y in range(range_start_y, range_end_y+range_start_y):
 
         if (skip == False):
-            for x in range(range_start_x, range_end_x+range_start_x, 2):
+            for x in range(range_start_x, range_end_x+range_start_x):
                 point_set.append(Point(x, y))
                 skip = True
 
         else:
-            for x in range(range_start_x+1, range_end_x+range_start_x, 2):
+            for x in range(range_start_x+1, range_end_x+range_start_x):
+                x -= 0.5
                 point_set.append(Point(x, y))
                 skip = False
 
@@ -136,11 +137,11 @@ def display_data(multi, multi2):
 
 
     if multi2 != 0:
-        xs2 = [point.x for point in multi]
-        ys2 = [point.y for point in multi]
+        xs2 = [point.x for point in multi2]
+        ys2 = [point.y for point in multi2]
 
-        plt.scatter(xs2, ys2, s=1)
-        plt.scatter(xs, ys, s=2)
+        plt.scatter(xs2, ys2, s=20, color="blue")
+        plt.scatter(xs, ys, s=10, color="orange")
     else:
 
         plt.scatter(xs, ys, s=1)

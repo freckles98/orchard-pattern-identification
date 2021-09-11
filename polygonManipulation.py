@@ -5,7 +5,7 @@ import shapely.affinity
 from shapely.affinity import affine_transform, translate, rotate
 import sys
 
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon
 
 import generateShape as gs
 import hausdorffDistance as hd
@@ -65,18 +65,23 @@ def normalize_data(data):
     gs.display_data(centroids, 0)
     return centroids
 
-def matching_the_pattern(model, data_set, shape, data):
+def matching_the_pattern(model, data_set, shape):
 
     minimum = np.inf
     matching_model = MatchingModel(minimum, model)
     final_pattern = []
+    rotation_range = 0
     switch = False
     flag = False
     start = time.time()
     # need to change the range
     for y in range(int(5)):
         for x in range(int(5)):
-            for z in range(12):
+            if shape =="square":
+                rotation_range = 6
+            else:
+                rotation_range = 12
+            for z in range(rotation_range):
 
                 haus = hd.hausdorff(model, data_set)
                 dist = haus
@@ -102,16 +107,11 @@ def matching_the_pattern(model, data_set, shape, data):
         if flag == True:
             break
         model = translations(model, 0, 0.2)
-        #gs.display_data(data, matching_model.model)
-
-    #if minimum == np.inf:
-        #print("no match")
-    #gs.display_data(matching_model.model, data)
-    #gs.display_data(data, 0)
-    #gs.display_data(matching_model.model,0)
     end = time.time()
     print(end-start)
-    final_pattern = assign_pattern(matching_model.distance, shape, data)
+    print(matching_model.distance)
+    final_pattern = assign_pattern(matching_model.distance, shape, data_set)
+    gs.display_data(matching_model.model, data_set)
     return (matching_model, final_pattern)
 
 def assign_pattern(minimum, shape, data):
@@ -120,43 +120,44 @@ def assign_pattern(minimum, shape, data):
         pattern.append(PatternNode(point, shape, minimum))
     return pattern
 
-def execute_over_entire_pattern(model, data, shape):
+def execute_over_entire_pattern(model, data, shape, data_set_range, increment):
     area = data.minimum_rotated_rectangle
     xcord, ycord = area.exterior.coords.xy
 
     list_of_matches = []
     switch = False
-    pattern =[]
-    for y in range(0, int(max(ycord)), 10):
+    pattern = []
+    for y in range(0, int(max(ycord)), 5):
 
-        for x in range(0, int(max(xcord)), 10):
-
-            area = model.minimum_rotated_rectangle
+        for x in range(0, int(max(xcord)), 5):
             data_set = []
             for point in data:
-                if area.contains(point) or area.touches(point):
+                if data_set_range.contains(point) or data_set_range.touches(point):
                     data_set.append(point)
             data_set = gs.to_multipoint(data_set)
-            #print(data_set[0])
+            print("Data set range: ",data_set_range)
 
-            #gs.display_data(data_set, 0)
+
             # change this not hausdorff best pattern match
             if len(data_set) > 0:
-                matches = matching_the_pattern(model, data_set, shape,  data)
+                matches = matching_the_pattern(model, data_set, shape)
                 pattern.append(matches[1])
                 list_of_matches.append(matches[0])
 
 
             if not switch:
-                model = translations(model, 10, 0)
+                model = translations(model, increment, 0)
+                data_set_range = translations(data_set_range, increment, 0)
             else:
-                model = translations(model, -10, 0)
+                model = translations(model, -increment, 0)
+                data_set_range = translations(data_set_range, -increment, 0)
 
         if switch:
             switch = False
         else:
             switch = True
-        model = translations(model, 0, 10)
+        model = translations(model, 0, increment)
+        data_set_range = translations(data_set_range, 0, increment)
         print("Okay going up", y)
         #gs.display_data(model, data)
     return list_of_matches, pattern
@@ -164,20 +165,22 @@ def execute_over_entire_pattern(model, data, shape):
 
 
 
-def best_pattern_match(data):
-    model1 = gs.square_set(0, 0, 10, 10, True)
-    model2 = gs.diamond_set(0, 0, 10, 10, True)
-    model3 = gs.double_row(0, 10, True)
-    gs.display_data(model1, 0)
+def best_pattern_match(data, window_size):
+    data_set_range = Polygon([(0,0),(0,window_size-1),(window_size-1,0),(window_size-1,window_size-1)])
+    model1 = gs.square_set(-1, -1, window_size+1, window_size+1, True)
+    model2 = gs.quincunx_set(-1, -1, window_size+1, window_size+1, True)
+    model3 = gs.double_row(0, window_size+1, True)
+    gs.display_data(model2,0)
+    increment = window_size
     #pool = mp.Pool(mp.cpu_count())
-    min1 = execute_over_entire_pattern(model1, data, "square")
+    min1 = execute_over_entire_pattern(model1, data, "square", data_set_range, increment)
     pattern_square = min1[1]
     gs.display_data_pattern(pattern_square, data)
 
 
-    min2 = execute_over_entire_pattern(model2, data, "diamond")
+    min2 = execute_over_entire_pattern(model2, data, "diamond", data_set_range, increment)
     pattern_diamond = min2[1]
-    min3 = execute_over_entire_pattern(model3, data, "double")
+    min3 = execute_over_entire_pattern(model3, data, "double", data_set_range, increment)
     pattern_double_row = min3[1]
     pattern = []
 
@@ -264,13 +267,14 @@ def initialize_pattern_node(points):
     return pattern
 
 def main():
-
+    quin = gs.quincunx_set(0,0,11,11,True)
+    gs.display_data(quin, 0)
     orchard_number = input("Please enter number: ")
     orchard_file = "raw_"+orchard_number+".geojson"
     ave = gs.determine_ave_confidence(orchard_file)
     print("Average",ave[0])
     print("std dev", ave[1])
-    #data = gs.square_set(0, 0, 30, 30, True)
+
     data = gs.importData(orchard_file, ave[0] - ave[1])
 
     data2 = gs.importData(orchard_file, ave[0])
@@ -279,9 +283,9 @@ def main():
 
 
     pattern = initialize_pattern_node(data)
-#    gs.display_data_pattern(pattern, data)
-    best_match = best_pattern_match(data)
-    #gs.display_data(best_match[2], 0)
+
+    best_match = best_pattern_match(data, 10)
+    gs.display_data(best_match[2], 0)
     print(best_match[2])
     gs.display_data_pattern(best_match[2])
 

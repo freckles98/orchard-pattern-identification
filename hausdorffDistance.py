@@ -30,9 +30,7 @@ def ckdnearest(point, btree):
 def minimise_euclidean_normal(point_set_a, point_set_b, cal_match):
     distances_set = []
     matching_set = []
-    btreestart = time.time()
     btree = cKDTree(point_set_b, balanced_tree=False)
-    btreeend = time.time()
 
     for index, point in enumerate(point_set_a):
 
@@ -43,21 +41,6 @@ def minimise_euclidean_normal(point_set_a, point_set_b, cal_match):
             matching_set.append(point)
     return distances_set, matching_set
 
-
-def minimise_euclidean_normal2(point_set_a, point_set_b, area):
-    distances_set = []
-
-
-    btree = cKDTree(point_set_b, balanced_tree=False)
-
-
-    for index, point in enumerate(point_set_a):
-        nearest_geoms = ckdnearest(point, btree)
-        if (area.contains(point_set_b[nearest_geoms[0]]) or area.touches(point_set_b[nearest_geoms[0]])):
-            distances_set.append(distances(point, point_set_b[nearest_geoms[0]], nearest_geoms[1], index))
-            print("This is the nearest point",point_set_b[nearest_geoms[0]].x, point_set_b[nearest_geoms[0]].y)
-
-    return distances_set
 
 def find_kth(distance_arr, area):
     maximum = 0
@@ -77,6 +60,30 @@ def find_kth(distance_arr, area):
         return np.inf
     return maximum
 
+def minimise_euclidean_normals(point_set_a, point_set_b):
+    distances_set = []
+    matching_set = []
+    btree = cKDTree(point_set_b, balanced_tree=False)
+
+    for index, point in enumerate(point_set_a):
+
+        nearest_geoms = ckdnearest(point, btree)
+        distances_set.append(distances(point, point_set_b[nearest_geoms[0]], nearest_geoms[1], index))
+        #print("This is the nearest point", point.x, point_set_b[nearest_geoms[0]].x, point.y, point_set_b[nearest_geoms[0]].y)
+
+    return distances_set
+
+def find_kths(distance_arr):
+    maximum = 0
+    count = 0
+    for x in distance_arr:
+        distance = x.distance
+        if distance > maximum:
+            maximum = distance
+    if count == 0:
+        return np.inf
+    return maximum
+
 
 
 
@@ -88,7 +95,7 @@ def hausdorff(point_set_a, point_set_b):
 
     matching_points = MultiPoint(distances_a[1])
     # use minimum rotated rectangle to outline the area of matching points
-    area = matching_points.minimum_rotated_rectangle
+    area = matching_points.convex_hull
 
     distances_b = minimise_euclidean_normal(point_set_b, point_set_a, area)
 
@@ -101,7 +108,8 @@ def hausdorff(point_set_a, point_set_b):
     else:
         maximum = max_b
 
-    #array = assign_values(distances_a[0], area, point_set_b, maximum, shape, pattern)
+
+
 
 
     return maximum
