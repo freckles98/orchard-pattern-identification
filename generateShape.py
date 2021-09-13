@@ -53,10 +53,7 @@ def importData(orchard, ave_confidence):
 
             x_ave = x / polygon_length
             y_ave = y / polygon_length
-            # inproj = pyproj.Proj('EPSG:3857')
-            # outproj = pyproj.Proj('EPSG:4326')
-            # x1, y1 = pyproj.transform(inproj, outproj, x_ave, y_ave)
-            # point_set.append(Point(x1, y1))
+
             point_set.append(Point(x_ave, y_ave))
 
         # other_set.append(polygon.centroid) maybe look at using centroid method
@@ -78,27 +75,27 @@ def square_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_poi
     return point_set
 # generate set of square
 
-# def quincunx_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
-#     point_set = []
-#     skip = False
-#
-#     for y in range(range_start_y, range_end_y+range_start_y):
-#
-#
-#         for x in range(range_start_x, range_end_x+range_start_x):
-#             point_set.append(Point(x, y))
-#             x +=0.5
-#             y +=0.5
-#             point_set.append(Point(x, y))
-#             x -= 0.5
-#             y -= 0.5
-#
-#     if multi_point_bool:
-#         return MultiPoint(point_set)
-#     return point_set
-
-
 def quincunx_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
+    point_set = []
+    skip = False
+
+    for y in range(range_start_y, range_end_y+range_start_y):
+
+
+        for x in range(range_start_x, range_end_x+range_start_x):
+            point_set.append(Point(x, y))
+            x +=0.5
+            y +=0.5
+            point_set.append(Point(x, y))
+            x -= 0.5
+            y -= 0.5
+
+    if multi_point_bool:
+        return MultiPoint(point_set)
+    return point_set
+
+
+def single_row(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
     point_set = []
     skip = True
 

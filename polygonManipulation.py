@@ -150,7 +150,8 @@ def execute_over_entire_pattern(model, data, shape, data_set_range, window_size)
                 pattern.append(matches[1])
 
                 list_of_matches.append(matches[0])
-                #dd.display_data(matches[0].model,data_set)
+                dd.display_data(matches[0].model,data_set)
+                print(matches[0].distance)
                 #dd.display_data(data_set,0)
             if x + window_size < int(max(xcord)):
                 if not switch:

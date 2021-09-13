@@ -29,7 +29,14 @@ def run_test():
     window_size = 10
     best_match = best_pattern_match(data, int(window_size))
 
+def test_2():
+    data = gs.mixedShape()
+    window_size = 5
+    best_match = best_pattern_match(data, int(window_size))
+
+
+
 if __name__ == '__main__':
-    run_experiment()
+    test_2()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
