@@ -6,6 +6,8 @@ from matplotlib.pyplot import plot
 from shapely.affinity import affine_transform, translate, rotate
 from shapely.geometry import Point, MultiPoint, shape, GeometryCollection
 import json
+import pyproj
+from pyproj import Proj
 import polygonManipulation as pm
 import numpy as np
 from matplotlib import pyplot
@@ -48,9 +50,15 @@ def importData(orchard, ave_confidence):
             for coordinate in range(polygon_length):
                 x += polygon[coordinate][0]
                 y += polygon[coordinate][1]
+
             x_ave = x / polygon_length
             y_ave = y / polygon_length
+            # inproj = pyproj.Proj('EPSG:3857')
+            # outproj = pyproj.Proj('EPSG:4326')
+            # x1, y1 = pyproj.transform(inproj, outproj, x_ave, y_ave)
+            # point_set.append(Point(x1, y1))
             point_set.append(Point(x_ave, y_ave))
+
         # other_set.append(polygon.centroid) maybe look at using centroid method
 
     return MultiPoint(point_set), len(features)
@@ -70,28 +78,45 @@ def square_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_poi
     return point_set
 # generate set of square
 
+# def quincunx_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
+#     point_set = []
+#     skip = False
+#
+#     for y in range(range_start_y, range_end_y+range_start_y):
+#
+#
+#         for x in range(range_start_x, range_end_x+range_start_x):
+#             point_set.append(Point(x, y))
+#             x +=0.5
+#             y +=0.5
+#             point_set.append(Point(x, y))
+#             x -= 0.5
+#             y -= 0.5
+#
+#     if multi_point_bool:
+#         return MultiPoint(point_set)
+#     return point_set
+
+
 def quincunx_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
     point_set = []
-    skip = False
+    skip = True
 
-    for y in range(range_start_y, range_end_y+range_start_y):
+    for y in range(range_start_y, range_end_y + range_start_y):
 
-        if (skip == False):
-            for x in range(range_start_x, range_end_x+range_start_x):
+        for x in range(range_start_x, range_end_x + range_start_x):
+            if skip == False:
                 point_set.append(Point(x, y))
                 skip = True
-
-        else:
-            for x in range(range_start_x+1, range_end_x+range_start_x):
-                x -= 0.5
-                point_set.append(Point(x, y))
+            else:
                 skip = False
+            if x== range_end_x+range_start_x-1 and x%2 == 1:
+                skip = True
 
 
     if multi_point_bool:
         return MultiPoint(point_set)
     return point_set
-
 
 def double_row(range_start, range_end, multi_point_bool):
     point_set = []
@@ -112,9 +137,9 @@ def to_multipoint(arr):
     return MultiPoint(arr)
 
 def mixedShape():
-    data1 = diamond_set(0, 0, 10, 15, False)
+    data1 = quincunx_set(0, 0, 10, 15, False)
     data2 = square_set(10, 0, 10, 15, False)
-    data3 = diamond_set(20, 0, 10, 15, False)
+    data3 = quincunx_set(20, 0, 10, 15, False)
     point_set = []
     for x in data1:
         point_set.append(x)
@@ -129,113 +154,9 @@ def mixedShape():
 
 
 
-def display_data(multi, multi2):
-    square_y = []
-    square_x = []
-    xs = [point.x for point in multi]
-    ys = [point.y for point in multi]
-
-
-    if multi2 != 0:
-        xs2 = [point.x for point in multi2]
-        ys2 = [point.y for point in multi2]
-
-        plt.scatter(xs2, ys2, s=20, color="blue")
-        plt.scatter(xs, ys, s=10, color="orange")
-    else:
-
-        plt.scatter(xs, ys, s=1)
-    plt.show()
-
-def display_data_pattern(multi, data):
-    square_y = []
-    square_x = []
-    diamond_x = []
-    diamond_y = []
-    double_x = []
-    double_y = []
-    xs = [point.x for point in data]
-    ys = [point.y for point in data]
-
-    for list in multi:
-        for point in list:
-            print(point.point.x, point.point.y, point.confidence, point.shape)
-            if point.shape == "none":
-                if point.confidence < 0.22:
-                    square_x.append(point.point.x)
-                    square_y.append(point.point.y)
-                print("here")
-            if point.shape == "diamond":
-                diamond_x.append(point.point.x)
-                diamond_y.append(point.point.y)
-            if point.shape == "double":
-                double_x.append(point.point.x)
-                double_y.append(point.point.y)
-    plt.scatter(xs, ys, s=0.5, color='blue')
-    plt.scatter(square_x, square_y, s=1, color='red')
-    plt.scatter(diamond_x, diamond_y, s=0.5, color='blue')
-    plt.scatter(double_x, double_y, s=0.5, color='yellow')
-
-    plt.show()
-
-def display_final_data_pattern(multi, data):
-    square_y = []
-    square_x = []
-    diamond_x = []
-    diamond_y = []
-    double_x = []
-    double_y = []
-    none_x = []
-    none_y = []
-    xs = [point.x for point in data]
-    ys = [point.y for point in data]
-
-
-    for point in multi:
-        print(point.point.x, point.point.y, point.confidence, point.shape)
-        if point.shape == "square":
-            square_x.append(point.point.x)
-            square_y.append(point.point.y)
-        if point.shape == "diamond":
-            diamond_x.append(point.point.x)
-            diamond_y.append(point.point.y)
-        if point.shape == "double":
-            double_x.append(point.point.x)
-            double_y.append(point.point.y)
-        if point.shape == "none":
-            none_x.append(point.point.x)
-            none_y.append(point.point.y)
-    plt.scatter(xs, ys, s=0.5, color='blue')
-    plt.scatter(square_x, square_y, s=1, color='red')
-    plt.scatter(diamond_x, diamond_y, s=0.5, color='blue')
-    plt.scatter(double_x, double_y, s=0.5, color='yellow')
-    plt.scatter(none_x, none_y, s=0.5, color='black')
-
-    plt.show()
 
 def main():
-    # data = importData()
-    # display_data(data, 0)
-
-    dd = double_row(0, 10, True)
-    #display_data(dd, 0)
-
-    # convex = data.minimum_rotated_rectangle
-    # display_data(convex)
-    # print("convex hull", convex)
-    # x, y = convex.exterior.coords.xy
-    # print(x, y)
-
-    diamond = diamond_set(0, 0, 5, 10, True)
-    #display_data(diamond, 0)
-    ms = mixedShape()
-    #display_data(ms, 0)
-
-
-# display_data(diamond)
-
-# print(hausdorff_distance(square_set(0, 10), diamond_set(0, 11)))
-# print(hausdorff_distance(square_set(0, 12), square_set(0, 11)))
+   return
 
 if __name__ == "__main__":
     main()

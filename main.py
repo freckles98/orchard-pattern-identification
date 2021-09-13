@@ -1,33 +1,35 @@
-# This is a sample Python script.
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import generateShape as gs
 import polygonManipulation as pm
+from polygonManipulation import normalize_data
+from polygonManipulation import best_pattern_match
+import displayData as dd
 
 
-def print_hi(name):
+def run_experiment():
+
     # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-    square = gs.square_set(0,0,10,10,True)
-    gs.display_data(square, 0)
-    square = pm.rotations(square)
-    gs.display_data(square, 0)
-    square = pm.rotations(square)
-    gs.display_data(square, 0)
-    square = pm.rotations(square)
-    gs.display_data(square, 0)
-    square = pm.rotations(square)
-    gs.display_data(square, 0)
-    square = pm.rotations(square)
-    gs.display_data(square, 0)
-    square = pm.rotations(square)
-    gs.display_data(square, 0)
+    orchard_number = input("Please orchard enter number: ")
+    window_size = input("Please enter window size: ")
+    orchard_file = "raw_"+orchard_number+".geojson"
+    ave = gs.determine_ave_confidence(orchard_file)
+    print("Average: ", ave[0])
+    print("Standard deviation: ", ave[1])
 
-    diamond = gs.diamond_set(0,0,10,10,True)
-    gs.display_data(diamond,0)
+    data = gs.importData(orchard_file, ave[0] - ave[1])
+    dd.display_data(data[0],0)
+    data = normalize_data(data)
+
+    best_match = best_pattern_match(data, int(window_size))
+    #gs.display_data(best_match[2], window_size)
 # Press the green button in the gutter to run the script.
+
+def run_test():
+    data = gs.square_set(0,0,20,15, True)
+    window_size = 10
+    best_match = best_pattern_match(data, int(window_size))
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    run_experiment()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

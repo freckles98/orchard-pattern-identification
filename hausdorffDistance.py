@@ -37,7 +37,7 @@ def minimise_euclidean_normal(point_set_a, point_set_b, cal_match):
         nearest_geoms = ckdnearest(point, btree)
         distances_set.append(distances(point, point_set_b[nearest_geoms[0]], nearest_geoms[1], index))
         #print("This is the nearest point", point.x, point_set_b[nearest_geoms[0]].x, point.y, point_set_b[nearest_geoms[0]].y)
-        if cal_match and nearest_geoms[1] < 0.22:
+        if cal_match and nearest_geoms[1] < 0.5:
             matching_set.append(point)
     return distances_set, matching_set
 
