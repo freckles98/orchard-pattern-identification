@@ -70,7 +70,7 @@ def normalize_data(data):
     return centroids
 
 
-def matching_the_pattern(model, data_set, shape):
+def matching_the_pattern(model, data_set, shape, implement_rotations):
     minimum = np.inf
     matching_model = MatchingModel(minimum, model)
     final_pattern = []
@@ -81,18 +81,26 @@ def matching_the_pattern(model, data_set, shape):
 
     for y in range(int(5)):
         for x in range(int(5)):
-            if shape == "square" or shape == "quincunx":
-                rotation_range = 6
-            else:
-                rotation_range = 12
-            for z in range(rotation_range):
+            if implement_rotations:
+                if shape == "square" or shape == "quincunx":
+                    rotation_range = 6
+                else:
+                    rotation_range = 12
+                for z in range(rotation_range):
 
+                    dist = hd.hausdorff(model, data_set)
+
+                    if 0 <= dist < matching_model.distance:
+                        matching_model = MatchingModel(dist, model)
+                    model = rotations(model)
+                model = rotate_back(model)
+
+            if not implement_rotations:
                 dist = hd.hausdorff(model, data_set)
 
                 if 0 <= dist < matching_model.distance:
                     matching_model = MatchingModel(dist, model)
-                model = rotations(model)
-            model = rotate_back(model)
+
             if x+1 < 5:
                 if switch == False:
                     model = translations(model, 0.2, 0)
@@ -120,7 +128,7 @@ def assign_pattern(minimum, shape, data):
     return pattern
 
 
-def execute_over_entire_pattern(model, data, shape, data_set_range, window_size):
+def execute_over_entire_pattern(model, data, shape, data_set_range, window_size, implement_rotations):
     area = data.minimum_rotated_rectangle
     xcord, ycord = area.exterior.coords.xy
 
@@ -146,7 +154,7 @@ def execute_over_entire_pattern(model, data, shape, data_set_range, window_size)
 
             # change this not hausdorff best pattern match
             if len(data_set) > 0:
-                matches = matching_the_pattern(model, data_set, shape)
+                matches = matching_the_pattern(model, data_set, shape, implement_rotations)
                 pattern.append(matches[1])
 
                 list_of_matches.append(matches[0])
@@ -173,7 +181,7 @@ def execute_over_entire_pattern(model, data, shape, data_set_range, window_size)
     return list_of_matches, pattern
 
 
-def best_pattern_match(data, window_size):
+def best_pattern_match(data, window_size, implement_rotations):
     data_set_range = Polygon([(0, 0), (window_size , 0), (window_size, window_size ), (0, window_size )  ])
 
     model1 = gs.square_set(-1, -1, window_size + 2, window_size + 2, True)
@@ -182,18 +190,20 @@ def best_pattern_match(data, window_size):
 
 
     # pool = mp.Pool(mp.cpu_count())
-    min1 = execute_over_entire_pattern(model1, data, "square", data_set_range, window_size)
+    min1 = execute_over_entire_pattern(model1, data, "square", data_set_range, window_size, implement_rotations)
     pattern_square = min1[1]
 
-    min2 = execute_over_entire_pattern(model2, data, "quincunx", data_set_range, window_size)
+    min2 = execute_over_entire_pattern(model2, data, "quincunx", data_set_range, window_size, implement_rotations)
     pattern_diamond = min2[1]
-    min3 = execute_over_entire_pattern(model3, data, "double", data_set_range, window_size)
+    min3 = execute_over_entire_pattern(model3, data, "double", data_set_range, window_size, implement_rotations)
     pattern_double_row = min3[1]
     pattern = []
 
     for index, list in enumerate(pattern_square):
         for point in range(len(list)):
             print(pattern_square[index][point].point,pattern_square[index][point].confidence)
+            print(pattern_diamond[index][point].point, pattern_diamond[index][point].confidence)
+            print(pattern_double_row[index][point].point, pattern_double_row[index][point].confidence)
 
             if pattern_square[index][point].confidence < pattern_diamond[index][point].confidence:
                 if pattern_square[index][point].confidence < pattern_double_row[index][point].confidence:

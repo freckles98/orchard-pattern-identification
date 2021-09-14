@@ -20,23 +20,23 @@ def run_experiment():
     dd.display_data(data[0],0)
     data = normalize_data(data)
 
-    best_match = best_pattern_match(data, int(window_size))
+    best_match = best_pattern_match(data, int(window_size), False)
     #gs.display_data(best_match[2], window_size)
 # Press the green button in the gutter to run the script.
 
 def run_test():
     data = gs.square_set(0,0,20,15, True)
     window_size = 10
-    best_match = best_pattern_match(data, int(window_size))
+    best_match = best_pattern_match(data, int(window_size), False)
 
 def test_2():
     data = gs.mixedShape()
     window_size = 5
-    best_match = best_pattern_match(data, int(window_size))
+    best_match = best_pattern_match(data, int(window_size), False)
 
 
 
 if __name__ == '__main__':
-    test_2()
+    run_experiment()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
