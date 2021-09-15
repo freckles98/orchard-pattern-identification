@@ -51,7 +51,7 @@ def normalize_data(data):
     density = num_trees / area
 
     centroids = shapely.affinity.scale(centroids, math.sqrt(density), math.sqrt(density))
-    centroids = scale(centroids, 0.6, 0.6)
+    centroids = scale(centroids, 0.6, 0.6) #cheeky scaling
     rectangle = centroids.minimum_rotated_rectangle
     x, y = rectangle.exterior.coords.xy
     translation_index = y.index(min(y))
@@ -145,12 +145,6 @@ def execute_over_entire_pattern(model, data, shape, data_set_range, window_size,
                 if data_set_range.contains(point) or data_set_range.touches(point):
                     data_set.append(point)
             data_set = gs.to_multipoint(data_set)
-            #density = len(data_set)/window_size*window_size
-           # print(density)
-
-            #model = scale(model, math.sqrt(len(data_set)/window_size**2), math.sqrt(len(data_set)/window_size**2))
-            #print(window_size)
-           # dd.display_data(data_set, 0)
 
             # change this not hausdorff best pattern match
             if len(data_set) > 0:
@@ -158,8 +152,8 @@ def execute_over_entire_pattern(model, data, shape, data_set_range, window_size,
                 pattern.append(matches[1])
 
                 list_of_matches.append(matches[0])
-                dd.display_data(matches[0].model,data_set)
-                print(matches[0].distance)
+                #dd.display_data(matches[0].model,data_set)
+                #print(matches[0].distance)
                 #dd.display_data(data_set,0)
             if x + window_size < int(max(xcord)):
                 if not switch:
@@ -179,6 +173,18 @@ def execute_over_entire_pattern(model, data, shape, data_set_range, window_size,
         print("Okay going up", y)
 
     return list_of_matches, pattern
+def find_maximum(square, hexagon, quincunx, double):
+    arr = [square,hexagon,quincunx,double]
+    min_val = np.inf
+    min_idx = 5
+    for inx, num in enumerate(arr):
+        print(num.confidence)
+        if min_val > num.confidence:
+            min_val = num.confidence
+            min_idx = inx
+    if min_val == np.inf:
+        return PatternNode(arr[0].point, "none", np.inf)
+    return PatternNode(arr[min_idx].point, arr[min_idx].shape, arr[min_idx].confidence)
 
 
 def best_pattern_match(data, window_size, implement_rotations):
@@ -187,6 +193,7 @@ def best_pattern_match(data, window_size, implement_rotations):
     model1 = gs.square_set(-1, -1, window_size + 2, window_size + 2, True)
     model2 = gs.quincunx_set(-1, -1, window_size + 2, window_size + 2, True)
     model3 = gs.double_row(-1, window_size + 2, True)
+    model4 = gs.hexagonal_set(-1, window_size + 2, True)
 
 
     # pool = mp.Pool(mp.cpu_count())
@@ -194,43 +201,50 @@ def best_pattern_match(data, window_size, implement_rotations):
     pattern_square = min1[1]
 
     min2 = execute_over_entire_pattern(model2, data, "quincunx", data_set_range, window_size, implement_rotations)
-    pattern_diamond = min2[1]
+    pattern_quincunx = min2[1]
     min3 = execute_over_entire_pattern(model3, data, "double", data_set_range, window_size, implement_rotations)
     pattern_double_row = min3[1]
+
+    min4 = execute_over_entire_pattern(model4, data, "hexagon", data_set_range, window_size, implement_rotations)
+    pattern_hexagon = min4[1]
     pattern = []
 
     for index, list in enumerate(pattern_square):
+
         for point in range(len(list)):
+
+
+            pattern.append(find_maximum(pattern_square[index][point],pattern_hexagon[index][point], pattern_quincunx[index][point], pattern_double_row[index][point]))
             print(pattern_square[index][point].point,pattern_square[index][point].confidence)
-            print(pattern_diamond[index][point].point, pattern_diamond[index][point].confidence)
+            print(pattern_quincunx[index][point].point, pattern_quincunx[index][point].confidence)
             print(pattern_double_row[index][point].point, pattern_double_row[index][point].confidence)
 
-            if pattern_square[index][point].confidence < pattern_diamond[index][point].confidence:
-                if pattern_square[index][point].confidence < pattern_double_row[index][point].confidence:
-
-                    pattern.append(PatternNode(pattern_square[index][point].point, pattern_square[index][point].shape,
-                                               pattern_square[index][point].confidence))
-
-                elif pattern_square[index][point].confidence > pattern_double_row[index][point].confidence:
-                    pattern.append(
-                        PatternNode(pattern_double_row[index][point].point, pattern_double_row[index][point].shape,
-                                    pattern_double_row[index][point].confidence))
-                else:
-                    pattern.append(PatternNode(pattern_square[index][point].point, "none", np.inf))
-            elif pattern_square[index][point].confidence > pattern_diamond[index][point].confidence:
-                if pattern_diamond[index][point].confidence < pattern_double_row[index][point].confidence:
-
-                    pattern.append(PatternNode(pattern_diamond[index][point].point, pattern_diamond[index][point].shape,
-                                               pattern_diamond[index][point].confidence))
-
-                elif pattern_diamond[index][point].confidence > pattern_double_row[index][point].confidence:
-                    pattern.append(
-                        PatternNode(pattern_double_row[index][point].point, pattern_double_row[index][point].shape,
-                                    pattern_double_row[index][point].confidence))
-                else:
-                    pattern.append(PatternNode(pattern_square[index][point].point, "none", np.inf))
-            else:
-                pattern.append(PatternNode(pattern_square[index][point].point, "none", np.inf))
+            # if pattern_square[index][point].confidence < pattern_diamond[index][point].confidence:
+            #     if pattern_square[index][point].confidence < pattern_double_row[index][point].confidence:
+            #
+            #         pattern.append(PatternNode(pattern_square[index][point].point, pattern_square[index][point].shape,
+            #                                    pattern_square[index][point].confidence))
+            #
+            #     elif pattern_square[index][point].confidence > pattern_double_row[index][point].confidence:
+            #         pattern.append(
+            #             PatternNode(pattern_double_row[index][point].point, pattern_double_row[index][point].shape,
+            #                         pattern_double_row[index][point].confidence))
+            #     else:
+            #         pattern.append(PatternNode(pattern_square[index][point].point, "none", np.inf))
+            # elif pattern_square[index][point].confidence > pattern_diamond[index][point].confidence:
+            #     if pattern_diamond[index][point].confidence < pattern_double_row[index][point].confidence:
+            #
+            #         pattern.append(PatternNode(pattern_diamond[index][point].point, pattern_diamond[index][point].shape,
+            #                                    pattern_diamond[index][point].confidence))
+            #
+            #     elif pattern_diamond[index][point].confidence > pattern_double_row[index][point].confidence:
+            #         pattern.append(
+            #             PatternNode(pattern_double_row[index][point].point, pattern_double_row[index][point].shape,
+            #                         pattern_double_row[index][point].confidence))
+            #     else:
+            #         pattern.append(PatternNode(pattern_square[index][point].point, "none", np.inf))
+            # else:
+            #     pattern.append(PatternNode(pattern_square[index][point].point, "none", np.inf))
     dd.display_final_data_pattern(pattern, data)
     return pattern
 
@@ -252,8 +266,9 @@ def main():
 
     data = gs.importData(orchard_file, ave[0] - ave[1])
     data = normalize_data(data)
+    dd.display_data(data,0)
 
-    best_match = best_pattern_match(data, int(window_size))
+    best_match = best_pattern_match(data, int(window_size), True)
     dd.display_data(best_match[2], window_size)
 
 

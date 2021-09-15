@@ -115,6 +115,20 @@ def single_row(range_start_x, range_start_y, range_end_x, range_end_y, multi_poi
         return MultiPoint(point_set)
     return point_set
 
+def hexagonal_set(range_start, range_end, multi_point_bool):
+    point_set = []
+    x = range_start
+    for y in range(range_start, range_end):
+        while x < range_end:
+            point_set.append(Point(x,y ))
+            point_set.append(Point(x+0.866,y+0.5))
+            x+= 1.732
+        x = range_start
+    if multi_point_bool:
+        return MultiPoint(point_set)
+    return point_set
+
+
 def double_row(range_start, range_end, multi_point_bool):
     point_set = []
     skip = 0

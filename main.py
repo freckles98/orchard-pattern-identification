@@ -19,8 +19,9 @@ def run_experiment():
     data = gs.importData(orchard_file, ave[0] - ave[1])
     dd.display_data(data[0],0)
     data = normalize_data(data)
+    dd.display_data(data, 0)
 
-    best_match = best_pattern_match(data, int(window_size), False)
+    best_match = best_pattern_match(data, int(window_size), True)
     #gs.display_data(best_match[2], window_size)
 # Press the green button in the gutter to run the script.
 
@@ -35,7 +36,9 @@ def test_2():
     best_match = best_pattern_match(data, int(window_size), False)
 
 
-
+def test3():
+    data = gs.hexagonal_set(0,15, True)
+    dd.display_data(data,0)
 if __name__ == '__main__':
     run_experiment()
 
