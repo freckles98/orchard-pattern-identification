@@ -10,6 +10,7 @@ from sklearn.neighbors import BallTree
 import generateShape as gs
 # from polygonManipulation import translations
 import polygonManipulation as pm
+import displayData as dd
 
 
 class distances:
@@ -37,7 +38,7 @@ def minimise_euclidean_normal(point_set_a, point_set_b, cal_match):
         nearest_geoms = ckdnearest(point, btree)
         distances_set.append(distances(point, point_set_b[nearest_geoms[0]], nearest_geoms[1], index))
         #print("This is the nearest point", point.x, point_set_b[nearest_geoms[0]].x, point.y, point_set_b[nearest_geoms[0]].y)
-        if cal_match and nearest_geoms[1] < 0.5:
+        if cal_match and nearest_geoms[1] < 0.7:
             matching_set.append(point)
     return distances_set, matching_set
 
@@ -55,7 +56,7 @@ def find_kth(distance_arr, area):
 
             if distance > maximum:
                 maximum = distance
-
+    print(count)
     if count == 0:
         return np.inf
     return maximum
@@ -76,13 +77,19 @@ def minimise_euclidean_normals(point_set_a, point_set_b):
 def find_kths(distance_arr):
     maximum = 0
     count = 0
+    ave = 0
     for x in distance_arr:
         distance = x.distance
-        if distance > maximum:
-            maximum = distance
+        if distance > 0.89:
+            pass
+        else:
+            if distance > maximum:
+                maximum = distance
+            ave +=distance
+            count+=1
     if count == 0:
         return np.inf
-    return maximum
+    return ave/count
 
 
 
@@ -98,9 +105,12 @@ def hausdorff(point_set_a, point_set_b):
     area = matching_points.convex_hull
 
     distances_b = minimise_euclidean_normal(point_set_b, point_set_a, area)
-
+    print(area)
+    if len(point_set_b) > 0:
+        dd.display_data(area, point_set_a, point_set_b)
     # find the largest separate
     max_a = find_kth(distances_a[0], area)
+    print(area)
     max_b = find_kth(distances_b[0], area)
 
     if max_a > max_b:
@@ -108,7 +118,29 @@ def hausdorff(point_set_a, point_set_b):
     else:
         maximum = max_b
 
+    print(maximum)
 
+
+
+    return maximum
+
+def hausdorffs(point_set_a, point_set_b):
+
+    distances_a = minimise_euclidean_normal(point_set_a, point_set_b, False)
+
+    distances_b = minimise_euclidean_normal(point_set_b, point_set_a, False)
+
+    # find the largest separate
+    max_a = find_kths(distances_a[0])
+
+    max_b = find_kths(distances_b[0])
+
+    if max_a > max_b:
+        maximum = max_a
+    else:
+        maximum = max_b
+
+    print(maximum)
 
 
 

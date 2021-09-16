@@ -97,19 +97,14 @@ def quincunx_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_p
 
 def single_row(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
     point_set = []
-    skip = True
 
-    for y in range(range_start_y, range_end_y + range_start_y):
+    y = range_start_y
+    while y < range_start_y+range_end_y:
 
         for x in range(range_start_x, range_end_x + range_start_x):
-            if skip == False:
-                point_set.append(Point(x, y))
-                skip = True
-            else:
-                skip = False
-            if x== range_end_x+range_start_x-1 and x%2 == 1:
-                skip = True
 
+            point_set.append(Point(x, y))
+        y += 0.2
 
     if multi_point_bool:
         return MultiPoint(point_set)
@@ -163,7 +158,34 @@ def mixedShape():
 
     return to_multipoint(point_set)
 
+def rectangle_set(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
+    point_set = []
+    end_y = range_end_y+range_start_y
+    end_x = range_end_x+range_start_x
+    for y in range(range_start_y, end_y):
+        for x in range(range_start_x, end_x):
+            point_set.append(Point(x, y))
+            point_set.append(Point(x,y+0.5))
 
+    if multi_point_bool:
+        return MultiPoint(point_set)
+    return point_set
+
+def multiple_mixed_pattern():
+    data1 = hexagonal_set(0,20,False)
+    data2 = quincunx_set(20,0,10,20, False)
+    data3 = square_set(30,0,15,20,False)
+    point_set = []
+    for x in data1:
+        point_set.append(x)
+
+    for y in data2:
+        point_set.append(y)
+
+    for z in data3:
+        point_set.append(z)
+
+    return to_multipoint(point_set)
 
 
 def main():

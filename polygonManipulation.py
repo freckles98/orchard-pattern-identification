@@ -1,4 +1,5 @@
 import math
+import random
 import time
 import pyproj
 
@@ -6,7 +7,7 @@ import shapely.affinity
 from matplotlib import pyplot as plt
 from shapely.affinity import affine_transform, translate, rotate, scale
 import sys
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, LineString
 
 import generateShape as gs
 import hausdorffDistance as hd
@@ -88,7 +89,7 @@ def matching_the_pattern(model, data_set, shape, implement_rotations):
                     rotation_range = 12
                 for z in range(rotation_range):
 
-                    dist = hd.hausdorff(model, data_set)
+                    dist = hd.hausdorffs(model, data_set)
 
                     if 0 <= dist < matching_model.distance:
                         matching_model = MatchingModel(dist, model)
@@ -96,7 +97,16 @@ def matching_the_pattern(model, data_set, shape, implement_rotations):
                 model = rotate_back(model)
 
             if not implement_rotations:
-                dist = hd.hausdorff(model, data_set)
+                # angles = []
+                # for x in range(5):
+                #     random_num = random.randint(0, len(data_set)-2)
+                #     point1 = data_set[random_num]
+                #     point2 = data_set[random_num+1]
+                #     if point1 > point2
+                #
+
+
+                dist = hd.hausdorffs(model, data_set)
 
                 if 0 <= dist < matching_model.distance:
                     matching_model = MatchingModel(dist, model)
@@ -127,6 +137,13 @@ def assign_pattern(minimum, shape, data):
         pattern.append(PatternNode(point, shape, minimum))
     return pattern
 
+def angle_between(p1, p2):
+    ang1 = np.arctan2(*p1[::-1])
+    ang2 = np.arctan2(*p2[::-1])
+    return np.rad2deg((ang1 - ang2) % (2 * np.pi))
+
+# def find_angle(p1, p2):
+#
 
 def execute_over_entire_pattern(model, data, shape, data_set_range, window_size, implement_rotations):
     area = data.minimum_rotated_rectangle
@@ -144,15 +161,19 @@ def execute_over_entire_pattern(model, data, shape, data_set_range, window_size,
             for point in data:
                 if data_set_range.contains(point) or data_set_range.touches(point):
                     data_set.append(point)
-            data_set = gs.to_multipoint(data_set)
+            multi_data_set = gs.to_multipoint(data_set)
 
+            line_data_set = LineString(data_set)
+            # print(line_data_set)
+            # print(multi_data_set)
+            #dd.display_data(line_data_set,0)
             # change this not hausdorff best pattern match
-            if len(data_set) > 0:
-                matches = matching_the_pattern(model, data_set, shape, implement_rotations)
+            if len(multi_data_set) > 0:
+                matches = matching_the_pattern(model, multi_data_set, shape, implement_rotations)
                 pattern.append(matches[1])
 
                 list_of_matches.append(matches[0])
-                #dd.display_data(matches[0].model,data_set)
+                dd.display_data(matches[0].model,multi_data_set)
                 #print(matches[0].distance)
                 #dd.display_data(data_set,0)
             if x + window_size < int(max(xcord)):
@@ -173,15 +194,18 @@ def execute_over_entire_pattern(model, data, shape, data_set_range, window_size,
         print("Okay going up", y)
 
     return list_of_matches, pattern
-def find_maximum(square, hexagon, quincunx, double):
-    arr = [square,hexagon,quincunx,double]
+def find_maximum(square, hexagon, quincunx, double, rectangle):
+    arr = [square, hexagon,quincunx,double, rectangle]
     min_val = np.inf
-    min_idx = 5
+    min_idx = 6
     for inx, num in enumerate(arr):
-        print(num.confidence)
+        if min_val == num.confidence:
+            print("THE SAME, THE SAME")
+
         if min_val > num.confidence:
             min_val = num.confidence
             min_idx = inx
+
     if min_val == np.inf:
         return PatternNode(arr[0].point, "none", np.inf)
     return PatternNode(arr[min_idx].point, arr[min_idx].shape, arr[min_idx].confidence)
@@ -194,9 +218,8 @@ def best_pattern_match(data, window_size, implement_rotations):
     model2 = gs.quincunx_set(-1, -1, window_size + 2, window_size + 2, True)
     model3 = gs.double_row(-1, window_size + 2, True)
     model4 = gs.hexagonal_set(-1, window_size + 2, True)
+    model5 = gs.rectangle_set(-1, -1, window_size + 2, window_size + 2, True)
 
-
-    # pool = mp.Pool(mp.cpu_count())
     min1 = execute_over_entire_pattern(model1, data, "square", data_set_range, window_size, implement_rotations)
     pattern_square = min1[1]
 
@@ -207,6 +230,9 @@ def best_pattern_match(data, window_size, implement_rotations):
 
     min4 = execute_over_entire_pattern(model4, data, "hexagon", data_set_range, window_size, implement_rotations)
     pattern_hexagon = min4[1]
+
+    min5 = execute_over_entire_pattern(model5, data, "rectangle", data_set_range, window_size, implement_rotations)
+    pattern_rectangle = min5[1]
     pattern = []
 
     for index, list in enumerate(pattern_square):
@@ -214,37 +240,10 @@ def best_pattern_match(data, window_size, implement_rotations):
         for point in range(len(list)):
 
 
-            pattern.append(find_maximum(pattern_square[index][point],pattern_hexagon[index][point], pattern_quincunx[index][point], pattern_double_row[index][point]))
-            print(pattern_square[index][point].point,pattern_square[index][point].confidence)
-            print(pattern_quincunx[index][point].point, pattern_quincunx[index][point].confidence)
-            print(pattern_double_row[index][point].point, pattern_double_row[index][point].confidence)
+            pattern.append(find_maximum(pattern_square[index][point],pattern_hexagon[index][point],
+                                        pattern_quincunx[index][point], pattern_double_row[index][point], pattern_rectangle[index][point]))
 
-            # if pattern_square[index][point].confidence < pattern_diamond[index][point].confidence:
-            #     if pattern_square[index][point].confidence < pattern_double_row[index][point].confidence:
-            #
-            #         pattern.append(PatternNode(pattern_square[index][point].point, pattern_square[index][point].shape,
-            #                                    pattern_square[index][point].confidence))
-            #
-            #     elif pattern_square[index][point].confidence > pattern_double_row[index][point].confidence:
-            #         pattern.append(
-            #             PatternNode(pattern_double_row[index][point].point, pattern_double_row[index][point].shape,
-            #                         pattern_double_row[index][point].confidence))
-            #     else:
-            #         pattern.append(PatternNode(pattern_square[index][point].point, "none", np.inf))
-            # elif pattern_square[index][point].confidence > pattern_diamond[index][point].confidence:
-            #     if pattern_diamond[index][point].confidence < pattern_double_row[index][point].confidence:
-            #
-            #         pattern.append(PatternNode(pattern_diamond[index][point].point, pattern_diamond[index][point].shape,
-            #                                    pattern_diamond[index][point].confidence))
-            #
-            #     elif pattern_diamond[index][point].confidence > pattern_double_row[index][point].confidence:
-            #         pattern.append(
-            #             PatternNode(pattern_double_row[index][point].point, pattern_double_row[index][point].shape,
-            #                         pattern_double_row[index][point].confidence))
-            #     else:
-            #         pattern.append(PatternNode(pattern_square[index][point].point, "none", np.inf))
-            # else:
-            #     pattern.append(PatternNode(pattern_square[index][point].point, "none", np.inf))
+
     dd.display_final_data_pattern(pattern, data)
     return pattern
 

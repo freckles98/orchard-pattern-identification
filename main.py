@@ -17,11 +17,11 @@ def run_experiment():
     print("Standard deviation: ", ave[1])
 
     data = gs.importData(orchard_file, ave[0] - ave[1])
-    dd.display_data(data[0],0)
+    #dd.display_data(data[0],0)
     data = normalize_data(data)
-    dd.display_data(data, 0)
+    #dd.display_data(data, 0)
 
-    best_match = best_pattern_match(data, int(window_size), True)
+    best_match = best_pattern_match(data, int(window_size), False)
     #gs.display_data(best_match[2], window_size)
 # Press the green button in the gutter to run the script.
 
@@ -32,14 +32,22 @@ def run_test():
 
 def test_2():
     data = gs.mixedShape()
-    window_size = 5
+    window_size = 10
     best_match = best_pattern_match(data, int(window_size), False)
+def drawing():
+    data = gs.rectangle_set(0,0,8,8,True)
 
-
-def test3():
-    data = gs.hexagonal_set(0,15, True)
     dd.display_data(data,0)
-if __name__ == '__main__':
-    run_experiment()
 
+def testtt():
+    a = (1,2)
+    b = (1,7)
+    angle = pm.angle_between(b,a)
+    print(angle)
+def test3():
+    data = gs.multiple_mixed_pattern()
+    dd.display_data(data,0)
+    best_match = best_pattern_match(data, int(6), False)
+if __name__ == '__main__':
+    test3()
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
