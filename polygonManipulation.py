@@ -97,13 +97,33 @@ def matching_the_pattern(model, data_set, shape, implement_rotations):
                 model = rotate_back(model)
 
             if not implement_rotations:
-                # angles = []
-                # for x in range(5):
-                #     random_num = random.randint(0, len(data_set)-2)
-                #     point1 = data_set[random_num]
-                #     point2 = data_set[random_num+1]
-                #     if point1 > point2
-                #
+                angles = []
+                for x in range(5):
+                    random_num = random.randint(0, len(data_set)-2)
+                    print(random_num)
+
+                    point1 = data_set[random_num]
+                    point2 = data_set[random_num+1]
+                    hypotenuse = point1.distance(point2)
+                    point3 = Point(point2.x, point1.y)
+                    adjacent = point2.distance(point3)
+                    angle = math.acos(adjacent / hypotenuse)* 180/math.pi
+                    print("This is the angle ",angle, point1, point2, point3)
+                    # if point1.y > point2.y:
+                    #     if point1.x > point2.x:
+                    #         # Quadrant 1
+                    #     else:
+                    #         # Quadrant 2
+                    # else:
+                    #     if point1.x > point2.x:
+                    #
+                    #     elif point1.x == point2.x:
+
+
+
+
+
+
 
 
                 dist = hd.hausdorffs(model, data_set)
@@ -142,8 +162,7 @@ def angle_between(p1, p2):
     ang2 = np.arctan2(*p2[::-1])
     return np.rad2deg((ang1 - ang2) % (2 * np.pi))
 
-# def find_angle(p1, p2):
-#
+
 
 def execute_over_entire_pattern(model, data, shape, data_set_range, window_size, implement_rotations):
     area = data.minimum_rotated_rectangle
@@ -194,6 +213,7 @@ def execute_over_entire_pattern(model, data, shape, data_set_range, window_size,
         print("Okay going up", y)
 
     return list_of_matches, pattern
+
 def find_maximum(square, hexagon, quincunx, double, rectangle):
     arr = [square, hexagon,quincunx,double, rectangle]
     min_val = np.inf
@@ -263,7 +283,7 @@ def main():
     print("Average: ", ave[0])
     print("Standard deviation: ", ave[1])
 
-    data = gs.importData(orchard_file, ave[0] - ave[1])
+    data = gs.import_data(orchard_file, ave[0] - ave[1])
     data = normalize_data(data)
     dd.display_data(data,0)
 

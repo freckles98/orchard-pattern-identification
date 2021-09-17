@@ -6,18 +6,7 @@ from matplotlib.pyplot import plot
 from shapely.affinity import affine_transform, translate, rotate
 from shapely.geometry import Point, MultiPoint, shape, GeometryCollection
 import json
-import pyproj
-from pyproj import Proj
-import polygonManipulation as pm
-import numpy as np
-from matplotlib import pyplot
-import sys
-from descartes.patch import PolygonPatch
-import figures
-from scipy.spatial import cKDTree
 
-# from figures import GRAY, BLUE, SIZE, set_limits, plot_line
-from shapely.ops import nearest_points
 
 def determine_ave_confidence(orchard):
     with open(orchard) as f:
@@ -34,7 +23,7 @@ def determine_ave_confidence(orchard):
     return average, std
 
 
-def importData(orchard, ave_confidence):
+def import_data(orchard, ave_confidence):
     with open(orchard) as f:
         features = json.load(f)["features"]
     point_set = []
@@ -117,7 +106,7 @@ def hexagonal_set(range_start, range_end, multi_point_bool):
         while x < range_end:
             point_set.append(Point(x,y ))
             point_set.append(Point(x+0.866,y+0.5))
-            x+= 1.732
+            x += 1.732
         x = range_start
     if multi_point_bool:
         return MultiPoint(point_set)
@@ -142,7 +131,7 @@ def double_row(range_start, range_end, multi_point_bool):
 def to_multipoint(arr):
     return MultiPoint(arr)
 
-def mixedShape():
+def mixed_shape():
     data1 = quincunx_set(0, 0, 10, 15, False)
     data2 = square_set(10, 0, 10, 15, False)
     data3 = quincunx_set(20, 0, 10, 15, False)
