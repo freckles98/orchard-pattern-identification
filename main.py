@@ -1,10 +1,10 @@
 
 import generateShape as gs
 import polygonManipulation as pm
-from polygonManipulation import normalize_data
-from polygonManipulation import best_pattern_match
+from polygonManipulation import best_pattern_match, normalize_data
 import displayData as dd
 import hausdorffDistance as hd
+from shapely.affinity import affine_transform, translate, rotate, scale
 
 
 def run_experiment():
@@ -37,8 +37,8 @@ def test_2():
     best_match = best_pattern_match(data, int(window_size), False)
 def drawing():
     data = gs.rectangle_set(0,0,8,8,True)
-
-    dd.display_data(data,0)
+    data2 = gs.rectangle_set(0,0,4,4, True)
+    dd.display_data(data2,0)
 
 def testtt():
     a = (1,2)
@@ -48,11 +48,14 @@ def testtt():
 def test_3():
     data = gs.multiple_mixed_pattern()
     dd.display_data(data,0)
-    best_match = best_pattern_match(data, int(6), False)
+    best_match = best_pattern_match(data, int(10), False)
 def test_4():
     data = gs.square_set(0,0,5,5,True)
-    model = gs.double_row(0,5,True)
-    hd.partial_hausdorff(model, data)
+    model = gs.hexagonal_set(0,5,True)
+    model = scale(model,1.15,1.15, origin=(0,0))
+    dd.display_data(model,data)
+
+    print(hd.partial_hausdorff(model, data))
 if __name__ == '__main__':
-    test_4()
+    run_experiment()
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

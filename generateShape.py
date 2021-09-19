@@ -102,24 +102,24 @@ def single_row(range_start_x, range_start_y, range_end_x, range_end_y, multi_poi
 def hexagonal_set(range_start, range_end, multi_point_bool):
     point_set = []
     x = range_start
-    for y in range(range_start, range_end):
-        while x < range_end:
-            point_set.append(Point(x,y ))
-            point_set.append(Point(x+0.866,y+0.5))
-            x += 1.732
-        x = range_start
+    for y in range(range_start, range_end, 2):
+        for x in range(range_start, range_end):
+            point_set.append(Point(x,y*0.866 ))
+            point_set.append(Point(x+0.5,(y*0.866)+0.866))
+
+
     if multi_point_bool:
         return MultiPoint(point_set)
     return point_set
 
 
-def double_row(range_start, range_end, multi_point_bool):
+def double_row(range_start_x, range_start_y, range_end_x, range_end_y, multi_point_bool):
     point_set = []
     skip = 0
-    for x in range(range_start, range_end):
+    for x in range(range_start_x, range_end_x + range_start_x):
 
         if skip != 2:
-            for y in range(range_start, range_end):
+            for y in range(range_start_y, range_end_y+range_start_y):
                 point_set.append(Point(x, y))
             skip += 1
         else:
@@ -135,6 +135,8 @@ def mixed_shape():
     data1 = quincunx_set(0, 0, 10, 15, False)
     data2 = square_set(10, 0, 10, 15, False)
     data3 = quincunx_set(20, 0, 10, 15, False)
+    data4 = double_row(30,0,10,15,False)
+    data5 = rectangle_set(40,0,10,15, False)
     point_set = []
     for x in data1:
         point_set.append(x)
@@ -144,6 +146,12 @@ def mixed_shape():
 
     for z in data3:
         point_set.append(z)
+
+    for a in data4:
+        point_set.append(a)
+
+    for b in data5:
+        point_set.append(b)
 
     return to_multipoint(point_set)
 

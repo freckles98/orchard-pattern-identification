@@ -87,10 +87,22 @@ def find_kth(distance_arr, area):
         return np.inf
     return maximum
 
-def find_kth_ranked(distance_arr):
-    new_list = sorted(distance_arr, key=lambda x: x.distance, reverse=False)
-    for x in new_list:
-        print(x.distance)
+def find_kth_ranked(distance_arr, area, f1=0.2):
+    q = len(distance_arr)
+    K = math.floor(f1*q)
+    maximum = []
+
+    for x in range(0, q, K):
+        max = 0
+        for point in distance_arr[x: x+K]:
+
+            if (area.contains(point.point_a) or area.touches(point.point_a)) and (
+                    area.contains(point.point_b) or area.touches(point.point_b)):
+                if point.distance > max:
+                    max = point.distance
+        maximum.append(max)
+    return min(maximum)
+
 
 
 def find_average(distance_arr, area):
@@ -101,8 +113,7 @@ def find_average(distance_arr, area):
         distance = x.distance
         if (area.contains(x.point_a) or area.touches(x.point_a)) and (
                 area.contains(x.point_b) or area.touches(x.point_b)):
-            if distance > maximum:
-                maximum = distance
+
             ave += distance
             count += 1
     if count == 0:
@@ -119,32 +130,67 @@ def adapted_partial_convex_hull(model, data):
     return max(max_a, max_b)
 
 def partial_hausdorff(model, data):
+    area = data.convex_hull
     distances_a = minimise_euclidean_normals(model, data)
     distances_b = minimise_euclidean_normals(data, model)
-    max_a = find_kth_ranked(distances_b)
-    return
-    #return max(max_a, max_b)
+    max_a = find_kth_ranked(distances_a, area)
+    max_b = find_kth_ranked(distances_b, area)
+    return max(max_a, max_b)
 
 def average_hausdorff(model, data):
-    distances_a = minimise_euclidean_normals(model, data)
-    distances_b = minimise_euclidean_normals(data, model)
     area = data.convex_hull
-    max_a = find_average(distances_a, area)
-    max_b = find_average(distances_b, area)
+    distances_a = hausdorff_ave(model, data, area)
+    distances_b = hausdorff_ave(data, model, area)
 
-    return max(max_a, max_b)
+
+    return max(distances_a, distances_b)
 
 def hausdorff(model, data):
-
-    distances_a = minimise_euclidean_normals(model, data)
-    distances_b = minimise_euclidean_normals(data, model)
-    # use minimum rotated rectangle to outline the area of matching points
     area = data.convex_hull
+    max_a = minimise_euclidean(model, data, area)
+    max_b = minimise_euclidean(data, model, area)
+    # use minimum rotated rectangle to outline the area of matching points
+
     # find the largest separate
-    max_a = find_maximum(distances_a, area)
-    max_b = find_maximum(distances_b, area)
+
 
     return max(max_a, max_b)
+
+def minimise_euclidean(point_set_a, point_set_b, area):
+    distances_set = []
+    matching_set = []
+    btree = cKDTree(point_set_b, balanced_tree=False)
+    count = 0
+    maximum = 0
+    for index, point in enumerate(point_set_a):
+        nearest_geoms = ckdnearest(point, btree)
+        if (area.contains(point) or area.touches(point)) :
+            count += 1
+
+            if nearest_geoms[1] > maximum:
+                maximum = nearest_geoms[1]
+            if maximum > 1:
+                return 1
+
+    if count == 0:
+        return np.inf
+    return maximum
+
+def hausdorff_ave(point_set_a, point_set_b, area):
+
+    btree = cKDTree(point_set_b, balanced_tree=False)
+    count = 0
+    ave = 0
+    for index, point in enumerate(point_set_a):
+        nearest_geoms = ckdnearest(point, btree)
+        if (area.contains(point) or area.touches(point)) :
+            count += 1
+            ave += nearest_geoms[1]
+
+    if count == 0:
+        return np.inf
+    return ave/count
+
 
 
 

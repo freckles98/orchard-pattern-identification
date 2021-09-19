@@ -34,7 +34,7 @@ def display_data(multi, multi2):
         #plt.scatter(pointyy, pointy, s=10, color='black')
     else:
 
-        plt.scatter(xs, ys, s=1)
+        plt.scatter(xs, ys, s=20, color="brown")
     with plt.style.context('dark_background'):
         #plt.gca().set_aspect('equal', adjustable='box')
         plt.axis('scaled')

@@ -1,6 +1,8 @@
 import math
 import random
 import time
+from collections import Counter
+
 import pyproj
 
 import shapely.affinity
@@ -52,7 +54,7 @@ def normalize_data(data):
     density = num_trees / area
 
     centroids = shapely.affinity.scale(centroids, math.sqrt(density), math.sqrt(density))
-    centroids = scale(centroids, 0.6, 0.6) #cheeky scaling
+    centroids = scale(centroids, 0.55, 0.55) #cheeky scaling
     rectangle = centroids.minimum_rotated_rectangle
     x, y = rectangle.exterior.coords.xy
     translation_index = y.index(min(y))
@@ -71,67 +73,134 @@ def normalize_data(data):
     return centroids
 
 
-def matching_the_pattern(model, data_set, shape, implement_rotations):
+
+def rotation_approximation(model, data_set,data_arr):
+    def takePoint(elem):
+        return elem.x
+
+    sorted_list = sorted(data_arr, key = lambda x:x.x)
+    dd.display_data(sorted_list[0:15],0)
+    sorted_by_y = sorted(sorted_list[0:15], key = lambda y:y.y)
+    dd.display_data(sorted_by_y[0:15], 0)
+    dict = {1: [0], 2: [0], 3: [0], 4: [0]}
+    for x in range(len(data_set)-1):
+        random_num = random.randint(0, len(data_set) - 2)
+        # print(random_num)
+
+        point1 = data_set[x]
+        point2 = data_set[x + 1]
+
+        hypotenuse = point1.distance(point2)
+        point3 = Point(point2.x, point1.y)
+        adjacent = point2.distance(point3)
+        angle = math.acos(adjacent / hypotenuse) * 180 / math.pi
+        # print("This is the angle ",angle, point1, point2, point3)
+
+        if point1.y > point2.y:
+            if point1.x > point2.x:
+                # Quadrant 1
+                arr = dict.get(1)
+                arr[0] = arr[0] + 1
+                arr.append(angle)
+                dict[1] = arr
+
+
+            elif point1.x == point2.x:
+                pass
+            else:
+                arr = dict.get(2)
+                arr[0] = arr[0] + 1
+                arr.append(angle)
+                dict[2] = arr
+                # Quadrant 2
+        else:
+            if point1.x > point2.x:
+                arr = dict.get(4)
+                arr[0] = arr[0] + 1
+                arr.append(angle)
+                dict[4] = arr
+
+            elif point1.x == point2.x:
+                pass
+            else:
+                arr = dict.get(3)
+                arr[0] = arr[0] + 1
+                arr.append(angle)
+                dict[3] = arr
+
+    max = [0, 0]
+    for x in range(1, 5):
+        count = dict.get(x)[0]
+
+        if max[1] < count:
+            max[0] = x
+            max[1] = count
+
+
+    common_arr = dict.get(max[0])
+    if max[0] > 2:
+        opposite_arr = dict.get(max[0]-2)
+    else:
+        opposite_arr = dict.get(max[0] + 2)
+
+    accum = 0
+    for x in range(1, len(common_arr)):
+        accum += common_arr[x]
+    for y in range(1, len(opposite_arr)):
+        accum += opposite_arr[y]
+
+    average = accum / (len(common_arr)+len(opposite_arr) - 2)
+
+    rotated_model = model
+    if max[0] == 1 or max[0] == 3:
+        rotated_model = rotate(model, average, origin='center')
+    if max[0] == 2 or max[0] == 3:
+        rotated_model = rotate(model, -average, origin='center')
+    return rotated_model
+
+
+def matching_the_pattern(model, data_set, shape, implement_rotations, data_arr):
     minimum = np.inf
     matching_model = MatchingModel(minimum, model)
     final_pattern = []
     rotation_range = 0
     switch = False
     flag = False
+    rotated_model = model
+    #rotated_model = rotation_approximation(model, data_set, data_arr)
+    if shape == "rectangle":
+        increments = 10
+    else:
+        increments = 5
 
-
-    for y in range(int(5)):
-        for x in range(int(5)):
+    for y in range(increments):
+        for x in range(increments):
             if implement_rotations:
                 if shape == "square" or shape == "quincunx":
                     rotation_range = 6
-                else:
+                elif shape == "double" or shape == "rectangle":
                     rotation_range = 12
+                else:
+                    rotation_range = 24
+                rotated_model = model
                 for z in range(rotation_range):
 
-                    dist = hd.hausdorffs(model, data_set)
+                    dist = hd.average_hausdorff(rotated_model, data_set)
 
                     if 0 <= dist < matching_model.distance:
-                        matching_model = MatchingModel(dist, model)
-                    model = rotations(model)
-                model = rotate_back(model)
+                        matching_model = MatchingModel(dist, rotated_model)
+                    rotated_model = rotations(model)
+                rotated_model = model
 
             if not implement_rotations:
-                angles = []
-                for x in range(5):
-                    random_num = random.randint(0, len(data_set)-2)
-                    print(random_num)
 
-                    point1 = data_set[random_num]
-                    point2 = data_set[random_num+1]
-                    hypotenuse = point1.distance(point2)
-                    point3 = Point(point2.x, point1.y)
-                    adjacent = point2.distance(point3)
-                    angle = math.acos(adjacent / hypotenuse)* 180/math.pi
-                    print("This is the angle ",angle, point1, point2, point3)
-                    # if point1.y > point2.y:
-                    #     if point1.x > point2.x:
-                    #         # Quadrant 1
-                    #     else:
-                    #         # Quadrant 2
-                    # else:
-                    #     if point1.x > point2.x:
-                    #
-                    #     elif point1.x == point2.x:
+                dist = hd.average_hausdorff(rotated_model, data_set)
 
-
-
-
-
-
-
-
-                dist = hd.hausdorffs(model, data_set)
 
                 if 0 <= dist < matching_model.distance:
-                    matching_model = MatchingModel(dist, model)
+                    matching_model = MatchingModel(dist, rotated_model)
 
-            if x+1 < 5:
+            if x+1 < increments:
                 if switch == False:
                     model = translations(model, 0.2, 0)
                 else:
@@ -182,13 +251,13 @@ def execute_over_entire_pattern(model, data, shape, data_set_range, window_size,
                     data_set.append(point)
             multi_data_set = gs.to_multipoint(data_set)
 
-            line_data_set = LineString(data_set)
+
             # print(line_data_set)
             # print(multi_data_set)
             #dd.display_data(line_data_set,0)
             # change this not hausdorff best pattern match
             if len(multi_data_set) > 0:
-                matches = matching_the_pattern(model, multi_data_set, shape, implement_rotations)
+                matches = matching_the_pattern(model, multi_data_set, shape, implement_rotations, data_set)
                 pattern.append(matches[1])
 
                 list_of_matches.append(matches[0])
@@ -234,11 +303,11 @@ def find_maximum(square, hexagon, quincunx, double, rectangle):
 def best_pattern_match(data, window_size, implement_rotations):
     data_set_range = Polygon([(0, 0), (window_size , 0), (window_size, window_size ), (0, window_size )  ])
 
-    model1 = gs.square_set(-1, -1, window_size + 2, window_size + 2, True)
-    model2 = gs.quincunx_set(-1, -1, window_size + 2, window_size + 2, True)
-    model3 = gs.double_row(-1, window_size + 2, True)
-    model4 = gs.hexagonal_set(-1, window_size + 2, True)
-    model5 = gs.rectangle_set(-1, -1, window_size + 2, window_size + 2, True)
+    model1 = gs.square_set(-1, -1, window_size + 3, window_size + 3, True)
+    model2 = gs.quincunx_set(-1, -1, window_size + 3, window_size + 3, True)
+    model3 = gs.double_row(-1, window_size + 3, True)
+    model4 = gs.hexagonal_set(-1, window_size + 3, True)
+    model5 = gs.rectangle_set(-1, -1, window_size + 3, window_size + 3, True)
 
     min1 = execute_over_entire_pattern(model1, data, "square", data_set_range, window_size, implement_rotations)
     pattern_square = min1[1]
