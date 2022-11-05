@@ -12,7 +12,7 @@ def run_experiment():
     # Use a breakpoint in the code line below to debug your script.
     orchard_number = input("Please orchard enter number: ")
     window_size = input("Please enter window size: ")
-    orchard_file = "raw_"+orchard_number+".geojson"
+    orchard_file = "data/raw_"+orchard_number+".geojson"
     ave = gs.determine_ave_confidence(orchard_file)
     print("Average: ", ave[0])
     print("Standard deviation: ", ave[1])
@@ -40,16 +40,16 @@ def drawing():
     data2 = gs.rectangle_set(0,0,4,4, True)
     dd.display_data(data2,0)
 
-def testtt():
+def test_3():
     a = (1,2)
     b = (1,7)
     angle = pm.angle_between(b,a)
     print(angle)
-def test_3():
+def test_4():
     data = gs.multiple_mixed_pattern()
     dd.display_data(data,0)
     best_match = best_pattern_match(data, int(10), False)
-def test_4():
+def test_5():
     data = gs.square_set(0,0,5,5,True)
     model = gs.hexagonal_set(0,5,True)
     model = scale(model,1.15,1.15, origin=(0,0))
@@ -58,4 +58,3 @@ def test_4():
     print(hd.partial_hausdorff(model, data))
 if __name__ == '__main__':
     run_experiment()
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
