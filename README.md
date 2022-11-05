@@ -17,8 +17,11 @@ Each library was installed using `pip install`:
 
 ## How to run the experiment
 To run the experiment use the command `python3 main.py`
+
 The prompt `Please orchard enter number: ` will appear. Choose your preferred orchard number from the numbers supplied in the `data` folder.
+
 The next prompt `Please enter window size:` will appear. Please provide an int.
+
 Then the experiment will commence.
 
 ## Acknowledgement

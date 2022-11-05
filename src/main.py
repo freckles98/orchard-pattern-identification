@@ -1,10 +1,7 @@
-
-import generateShape as gs
+from src import generateShape as gs, displayData as dd, hausdorffDistance as hd
 import polygonManipulation as pm
 from polygonManipulation import best_pattern_match, normalize_data
-import displayData as dd
-import hausdorffDistance as hd
-from shapely.affinity import affine_transform, translate, rotate, scale
+from shapely.affinity import scale
 
 
 def run_experiment():

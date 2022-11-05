@@ -1,21 +1,12 @@
 import math
 import random
-import time
-from collections import Counter
-
-import pyproj
 
 import shapely.affinity
-from matplotlib import pyplot as plt
-from shapely.affinity import affine_transform, translate, rotate, scale
-import sys
-from shapely.geometry import Point, Polygon, LineString
+from shapely.affinity import translate, rotate, scale
+from shapely.geometry import Point, Polygon
 
-import generateShape as gs
-import hausdorffDistance as hd
+from src import generateShape as gs, displayData as dd, hausdorffDistance as hd
 import numpy as np
-import multiprocessing as mp
-import displayData as dd
 
 
 class PatternNode:

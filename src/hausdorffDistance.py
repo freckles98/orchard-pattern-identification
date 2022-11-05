@@ -1,13 +1,10 @@
 import math
-import time
 
 import numpy as np
-from shapely.geometry import MultiPoint, Point, Polygon
-from shapely.ops import nearest_points
-from scipy.spatial import distance, cKDTree, KDTree
-from sklearn.neighbors import BallTree
+from shapely.geometry import MultiPoint
+from scipy.spatial import cKDTree
 
-import generateShape as gs
+from src import generateShape as gs
 
 
 class distances:

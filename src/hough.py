@@ -1,9 +1,7 @@
-from sklearn.datasets import make_regression
 from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
 import seaborn as sns
-from sklearn.model_selection import train_test_split
-import generateShape as gs
+from src import generateShape as gs
 import polygonManipulation as pm
 
 sns.set()
